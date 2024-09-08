@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/icon-project/stacks-go-sdk/internal/utils"
-	"github.com/icon-project/stacks-go-sdk/pkg/c32"
 	"github.com/icon-project/stacks-go-sdk/pkg/clarity"
 	"github.com/icon-project/stacks-go-sdk/pkg/stacks"
 )
@@ -23,7 +22,7 @@ type TokenTransferPayload struct {
 }
 
 type ContractCallPayload struct {
-	ContractAddress string
+	ContractAddress clarity.ClarityValue // Can be either StandardPrincipal or ContractPrincipal
 	ContractName    string
 	FunctionName    string
 	FunctionArgs    []clarity.ClarityValue
@@ -39,6 +38,20 @@ func NewTokenTransferPayload(recipient string, amount uint64, memo string) (*Tok
 		Recipient: principalCV,
 		Amount:    amount,
 		Memo:      memo,
+	}, nil
+}
+
+func NewContractCallPayload(contractAddress string, contractName string, functionName string, functionArgs []clarity.ClarityValue) (*ContractCallPayload, error) {
+	principalCV, err := clarity.StringToPrincipal(contractAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ContractCallPayload{
+		ContractAddress: principalCV,
+		ContractName:    contractName,
+		FunctionName:    functionName,
+		FunctionArgs:    functionArgs,
 	}, nil
 }
 
@@ -98,11 +111,11 @@ func (p *ContractCallPayload) Serialize() ([]byte, error) {
 
 	buf = append(buf, byte(stacks.PayloadTypeContractCall))
 
-	contractAddressBytes, err := c32.SerializeAddress(p.ContractAddress)
+	contractAddressBytes, err := p.ContractAddress.Serialize()
 	if err != nil {
 		return nil, err
 	}
-	buf = append(buf, contractAddressBytes...)
+	buf = append(buf, contractAddressBytes[1:]...) // skip clarity type byte
 
 	contractNameBytes, err := utils.SerializeString(p.ContractName, stacks.MaxStringLengthBytes)
 	if err != nil {
@@ -138,12 +151,15 @@ func (p *ContractCallPayload) Deserialize(data []byte) (int, error) {
 
 	offset := 1
 
-	contractAddress, n, err := c32.DeserializeAddress(data[offset:])
+	// add back in clarity type byte. note this is ClarityTypeStandardPrincipal but should be ClarityTypeContractPrincipal
+	dataWithClarityType := append([]byte{byte(clarity.ClarityTypeStandardPrincipal)}, data[offset:]...)
+
+	contractPrincipal, n, err := clarity.DeserializePrincipal(dataWithClarityType)
 	if err != nil {
 		return 0, err
 	}
-	p.ContractAddress = contractAddress
-	offset += n
+	p.ContractAddress = contractPrincipal
+	offset += n - 1
 
 	contractName, n, err := utils.DeserializeString(data[offset:], stacks.MaxStringLengthBytes)
 	if err != nil {
@@ -152,7 +168,7 @@ func (p *ContractCallPayload) Deserialize(data []byte) (int, error) {
 	p.ContractName = contractName
 	offset += n
 
-	functionName, n, err := utils.DeserializeString(data[offset:], stacks.MaxStringLengthBytes)
+	functionName, n, err := utils.DeserializeString(dataWithClarityType[offset:], stacks.MaxStringLengthBytes)
 	if err != nil {
 		return 0, err
 	}

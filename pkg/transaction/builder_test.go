@@ -76,3 +76,98 @@ func TestMakeSTXTokenTransfer(t *testing.T) {
 		t.Errorf("Expected nonce %d, got %d", specifiedNonce.Uint64(), tx2.Auth.OriginAuth.Nonce)
 	}
 }
+
+// func TestBroadcastSTXTokenTransferTransaction(t *testing.T) {
+// 	mnemonic := "vapor unhappy gather snap project ball gain puzzle comic error avocado bounce letter anxiety wheel provide canyon promote sniff improve figure daughter mansion baby"
+// 	privateKey, err := crypto.DeriveStxPrivateKey(mnemonic, 0)
+// 	if err != nil {
+// 		t.Fatalf("Failed to derive private key: %v", err)
+// 	}
+
+// 	senderAddress := "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+// 	senderPublicKey := crypto.GetPublicKeyFromPrivate(privateKey)
+// 	var signerArray [20]byte
+// 	copy(signerArray[:], crypto.Hash160(senderPublicKey))
+
+// 	recipient := "ST3YJD5Y1WTMC8R09ZKR3HJF562R3NM8HHXW2S2R9"
+// 	amount := big.NewInt(1000000) // 1 STX
+// 	memo := "Test transfer"
+// 	network := stacks.NewStacksTestnet()
+// 	tx, err := MakeSTXTokenTransfer(recipient, *amount, memo, *network, senderAddress, privateKey, big.NewInt(456), big.NewInt(12))
+// 	if err != nil {
+// 		t.Fatalf("Failed to create transaction: %v", err)
+// 	}
+
+// 	// Sign the transaction
+// 	err = SignTransaction(tx, privateKey)
+// 	if err != nil {
+// 		t.Fatalf("Failed to sign transaction: %v", err)
+// 	}
+
+// 	// Broadcast the transaction
+// 	txID, err := BroadcastTransaction(tx, *network)
+// 	if err != nil {
+// 		t.Fatalf("Failed to broadcast transaction: %v", err)
+// 	}
+
+// 	// Check the result
+// 	if !isValidTransactionID(txID) {
+// 		t.Fatalf("Received invalid transaction ID: %s", txID)
+// 	}
+
+// 	fmt.Printf("Transaction broadcasted successfully. TxID: %s\n", txID)
+// }
+
+// func TestBroadcastContractCallTransaction(t *testing.T) {
+// 	mnemonic := "vapor unhappy gather snap project ball gain puzzle comic error avocado bounce letter anxiety wheel provide canyon promote sniff improve figure daughter mansion baby"
+// 	privateKey, err := crypto.DeriveStxPrivateKey(mnemonic, 0)
+// 	if err != nil {
+// 		t.Fatalf("Failed to derive private key: %v", err)
+// 	}
+
+// 	senderAddress := "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+// 	senderPublicKey := crypto.GetPublicKeyFromPrivate(privateKey)
+// 	var signerArray [20]byte
+// 	copy(signerArray[:], crypto.Hash160(senderPublicKey))
+
+// 	contractAddress := "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH"
+// 	contractName := "contract_name"
+// 	functionName := "address-string-to-principal"
+
+// 	// intArg, err := clarity.NewUInt(1)
+// 	// require.NoError(t, err, "Failed to create int argument")
+
+// 	strArg, err := clarity.NewStringASCII("test")
+// 	require.NoError(t, err, "Failed to create string argument")
+
+// 	functionArgs := []clarity.ClarityValue{
+// 		// intArg,
+// 		// clarity.NewBool(true),
+// 		strArg,
+// 	}
+
+// 	network := stacks.NewStacksTestnet()
+// 	tx, err := MakeContractCall(contractAddress, contractName, functionName, functionArgs, *network, senderAddress, privateKey, big.NewInt(456), big.NewInt(10))
+// 	if err != nil {
+// 		t.Fatalf("Failed to create transaction: %v", err)
+// 	}
+
+// 	// Sign the transaction
+// 	err = SignTransaction(tx, privateKey)
+// 	if err != nil {
+// 		t.Fatalf("Failed to sign transaction: %v", err)
+// 	}
+
+// 	// Broadcast the transaction
+// 	txID, err := BroadcastTransaction(tx, *network)
+// 	if err != nil {
+// 		t.Fatalf("Failed to broadcast transaction: %v", err)
+// 	}
+
+// 	// Check the result
+// 	if !isValidTransactionID(txID) {
+// 		t.Fatalf("Received invalid transaction ID: %s", txID)
+// 	}
+
+// 	fmt.Printf("Transaction broadcasted successfully. TxID: %s\n", txID)
+// }
