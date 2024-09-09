@@ -28,6 +28,14 @@ type ContractCallPayload struct {
 	FunctionArgs    []clarity.ClarityValue
 }
 
+func (t *TokenTransferTransaction) GetPayload() Payload {
+	return &t.Payload
+}
+
+func (t *ContractCallTransaction) GetPayload() Payload {
+	return &t.Payload
+}
+
 func NewTokenTransferPayload(recipient string, amount uint64, memo string) (*TokenTransferPayload, error) {
 	principalCV, err := clarity.StringToPrincipal(recipient)
 	if err != nil {

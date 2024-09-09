@@ -13,6 +13,7 @@ type StacksTransaction interface {
 	Serialize() ([]byte, error)
 	Deserialize([]byte) error
 	GetAuth() *TransactionAuth
+	GetPayload() Payload
 	Clone() StacksTransaction
 }
 
