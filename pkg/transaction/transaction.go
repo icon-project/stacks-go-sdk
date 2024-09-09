@@ -200,11 +200,10 @@ func (t *TokenTransferTransaction) Deserialize(data []byte) error {
 	}
 	offset++
 
-	payloadLen, err := t.Payload.Deserialize(data[offset:])
+	_, err = t.Payload.Deserialize(data[offset:])
 	if err != nil {
 		return fmt.Errorf("failed to deserialize token transfer payload: %w", err)
 	}
-	offset += payloadLen
 
 	return nil
 }
@@ -286,11 +285,10 @@ func (t *ContractCallTransaction) Deserialize(data []byte) error {
 	}
 	offset++
 
-	payloadLen, err := t.Payload.Deserialize(data[offset:])
+	_, err = t.Payload.Deserialize(data[offset:])
 	if err != nil {
 		return fmt.Errorf("failed to deserialize contract call payload: %w", err)
 	}
-	offset += payloadLen
 
 	return nil
 }
@@ -345,19 +343,17 @@ func DeserializeTransaction(data []byte) (StacksTransaction, error) {
 	switch payloadType {
 	case stacks.PayloadTypeTokenTransfer:
 		tokenTx := &TokenTransferTransaction{BaseTransaction: baseTx}
-		payloadLen, err := tokenTx.Payload.Deserialize(data[offset:])
+		_, err := tokenTx.Payload.Deserialize(data[offset:])
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize token transfer payload: %w", err)
 		}
-		offset += payloadLen
 		tx = tokenTx
 	case stacks.PayloadTypeContractCall:
 		contractTx := &ContractCallTransaction{BaseTransaction: baseTx}
-		payloadLen, err := contractTx.Payload.Deserialize(data[offset:])
+		_, err := contractTx.Payload.Deserialize(data[offset:])
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize contract call payload: %w", err)
 		}
-		offset += payloadLen
 		tx = contractTx
 	default:
 		return nil, fmt.Errorf("unsupported payload type: %d", payloadType)
