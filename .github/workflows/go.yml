@@ -65,7 +65,7 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Run Unit Tests with Coverage
-      run: go test -coverprofile=coverage.txt
+      run: go test -v -coverprofile=coverage.txt ./pkg/...
 
     - name: Upload results to Codecov
       uses: codecov/codecov-action@v4
