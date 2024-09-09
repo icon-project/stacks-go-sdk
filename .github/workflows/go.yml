@@ -65,12 +65,12 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Run Unit Tests with Coverage
-      run: go test -v -coverprofile=coverage.txt -covermode=atomic ./pkg/...
+      run: go test -coverprofile=coverage.txt
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Upload results to Codecov
+      uses: codecov/codecov-action@v4
       with:
-        files: ./coverage.txt
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   integration-tests:
     runs-on: ubuntu-latest
