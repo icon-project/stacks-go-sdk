@@ -16,7 +16,7 @@ Send tokens and call Clarity smart contracts on the Stacks blockchain with Golan
 To use this SDK in your Go project, run:
 
 ```bash
-go get github.com/balancednetwork/stacks-go-sdk
+go get github.com/icon-project/stacks-go-sdk
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ Here are some basic usage examples:
 ### Creating and Broadcasting a Token Transfer Transaction
 ```go
 import (
-    "github.com/balancednetwork/stacks-go-sdk/stacks"
+    "github.com/icon-project/stacks-go-sdk/stacks"
     "math/big"
 )
 
@@ -66,8 +66,8 @@ func main() {
 ### Creating and Broadcasting a Token Transfer Transaction
 ```go
 import (
-    "github.com/balancednetwork/stacks-go-sdk/stacks"
-    "github.com/balancednetwork/stacks-go-sdk/clarity"
+    "github.com/icon-project/stacks-go-sdk/stacks"
+    "github.com/icon-project/stacks-go-sdk/clarity"
 )
 
 func main() {
@@ -113,7 +113,7 @@ func main() {
 ### Working with Clarity Values
 ```golang
 import (
-    "github.com/balancednetwork/stacks-go-sdk/clarity"
+    "github.com/icon-project/stacks-go-sdk/clarity"
 )
 
 func main() {
