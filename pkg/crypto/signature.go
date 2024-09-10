@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	// nolint:staticcheck // SA1019: RIPEMD-160 is required for compatibility
 	"golang.org/x/crypto/ripemd160"
 
 	"github.com/btcsuite/btcd/btcec/v2"

@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/icon-project/stacks-go-sdk/graph/badge.svg?token=CvLaGibygJ)](https://codecov.io/gh/icon-project/stacks-go-sdk)
+
 # Unofficial Stacks Blockchain SDK for Go
 
 Send tokens and call Clarity smart contracts on the Stacks blockchain with Golang.

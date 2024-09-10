@@ -19,7 +19,7 @@ func TestBroadcastSTXTokenTransferTransaction(t *testing.T) {
 		t.Fatalf("Failed to derive private key: %v", err)
 	}
 
-	senderAddress := "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+	senderAddress := "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH"
 	senderPublicKey := crypto.GetPublicKeyFromPrivate(privateKey)
 	var signerArray [20]byte
 	copy(signerArray[:], crypto.Hash160(senderPublicKey))
@@ -53,7 +53,7 @@ func TestBroadcastContractCallTransaction(t *testing.T) {
 		t.Fatalf("Failed to derive private key: %v", err)
 	}
 
-	senderAddress := "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+	senderAddress := "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH"
 	senderPublicKey := crypto.GetPublicKeyFromPrivate(privateKey)
 	var signerArray [20]byte
 	copy(signerArray[:], crypto.Hash160(senderPublicKey))
