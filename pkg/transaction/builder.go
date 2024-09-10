@@ -27,6 +27,13 @@ func (e *CustomError) Error() string {
 	return e.Message
 }
 
+type NonceInfo struct {
+	LastExecutedTxNonce   *int64  `json:"last_executed_tx_nonce"`
+	LastMempoolTxNonce    *int64  `json:"last_mempool_tx_nonce"`
+	PossibleNextNonce     int64   `json:"possible_next_nonce"`
+	DetectedMissingNonces []int64 `json:"detected_missing_nonces"`
+}
+
 func makeRequest(url string, method string, payload interface{}) ([]byte, error) {
 	client := resty.New()
 	var resp *resty.Response
@@ -55,23 +62,25 @@ func makeRequest(url string, method string, payload interface{}) ([]byte, error)
 	return resp.Body(), nil
 }
 
-func getNonce(address string, network stacks.StacksNetwork) (*big.Int, error) {
-	url := network.GetAccountAPIURL(address)
+func getNextNonce(address string, network stacks.StacksNetwork) (*big.Int, error) {
+	url := network.GetNonceAPIURL(address)
+
 	body, err := makeRequest(url, "GET", nil)
 	if err != nil {
-		return nil, &CustomError{Message: "Error fetching nonce", Err: err}
+		return nil, &CustomError{Message: "Error fetching nonce info", Err: err}
 	}
 
-	var result struct {
-		Nonce uint64 `json:"nonce"`
-	}
-
-	err = json.Unmarshal(body, &result)
+	var nonceInfo NonceInfo
+	err = json.Unmarshal(body, &nonceInfo)
 	if err != nil {
-		return nil, &CustomError{Message: "Error parsing JSON response", Err: err}
+		return nil, &CustomError{Message: "Error parsing nonce info", Err: err}
 	}
 
-	return big.NewInt(int64(result.Nonce)), nil
+	if len(nonceInfo.DetectedMissingNonces) > 0 {
+		fmt.Printf("Warning: Detected missing nonces: %v\n", nonceInfo.DetectedMissingNonces)
+	}
+
+	return big.NewInt(nonceInfo.PossibleNextNonce), nil
 }
 
 func estimateTransactionFee(tx StacksTransaction, network stacks.StacksNetwork) (*big.Int, error) {
@@ -154,7 +163,7 @@ func createAndSignTransaction(tx StacksTransaction, network stacks.StacksNetwork
 	}
 
 	if nonce == nil {
-		nonce, err = getNonce(senderAddress, network)
+		nonce, err = getNextNonce(senderAddress, network)
 		if err != nil {
 			return &CustomError{Message: "Failed to fetch nonce", Err: err}
 		}

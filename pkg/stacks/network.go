@@ -43,6 +43,10 @@ func (n *StacksNetwork) GetTransactionFeeEstimateAPIURL() string {
 	return fmt.Sprintf("%s/v2/fees/transaction", n.coreAPIURL)
 }
 
+func (n *StacksNetwork) GetNonceAPIURL(address string) string {
+	return fmt.Sprintf("%s/extended/v1/address/%s/nonces", n.coreAPIURL, address)
+}
+
 func (n *StacksNetwork) FetchFn(url string) (*http.Response, error) {
 	return http.Get(url)
 }
