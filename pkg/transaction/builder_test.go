@@ -15,7 +15,7 @@ func TestMakeSTXTokenTransfer(t *testing.T) {
 	amount := big.NewInt(1000000) // 1 STX
 	memo := "Test transfer"
 	network := stacks.NewStacksTestnet()
-	senderAddress := "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+	senderAddress := "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH"
 	senderKeyHex := "c1d5bb638aa70862621667f9997711fce692cad782694103f8d9561f62e9f19701"
 	senderKey, _ := hex.DecodeString(senderKeyHex)
 
