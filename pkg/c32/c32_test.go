@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCrockfordDecode(t *testing.T) {
+func TestC32Decode(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -37,14 +37,14 @@ func TestCrockfordDecode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			decoded, err := C32Decode(tt.input)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CrockfordDecode() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("C32Decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			gotHex := hex.EncodeToString(decoded)
 
 			if !reflect.DeepEqual(gotHex, tt.expected) {
-				t.Errorf("CrockfordDecode() = %v, want %v", gotHex, tt.expected)
+				t.Errorf("C32Decode() = %v, want %v", gotHex, tt.expected)
 			}
 		})
 	}

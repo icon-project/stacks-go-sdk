@@ -1,151 +1,186 @@
 package transaction
 
 import (
-	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math/big"
 	"net/http"
+	"strconv"
+	"strings"
 
+	"github.com/go-resty/resty/v2"
+	"github.com/icon-project/stacks-go-sdk/pkg/clarity"
+	"github.com/icon-project/stacks-go-sdk/pkg/crypto"
 	"github.com/icon-project/stacks-go-sdk/pkg/stacks"
 )
 
+type CustomError struct {
+	Message string
+	Err     error
+}
+
+func (e *CustomError) Error() string {
+	if e.Err != nil {
+		return fmt.Sprintf("%s: %v", e.Message, e.Err)
+	}
+	return e.Message
+}
+
+func makeRequest(url string, method string, payload interface{}) ([]byte, error) {
+	client := resty.New()
+	var resp *resty.Response
+	var err error
+
+	switch method {
+	case "GET":
+		resp, err = client.R().Get(url)
+	case "POST":
+		resp, err = client.R().
+			SetHeader("Content-Type", "application/json").
+			SetBody(payload).
+			Post(url)
+	default:
+		return nil, &CustomError{Message: "Unsupported HTTP method"}
+	}
+
+	if err != nil {
+		return nil, &CustomError{Message: "Error making request", Err: err}
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, &CustomError{Message: fmt.Sprintf("Request failed with status code: %d, body: %s", resp.StatusCode(), string(resp.Body()))}
+	}
+
+	return resp.Body(), nil
+}
+
 func getNonce(address string, network stacks.StacksNetwork) (*big.Int, error) {
 	url := network.GetAccountAPIURL(address)
-
-	resp, err := network.FetchFn(url)
+	body, err := makeRequest(url, "GET", nil)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching nonce: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error fetching nonce. Response %d: %s. URL: %s, Body: %s",
-			resp.StatusCode, resp.Status, url, string(body))
+		return nil, &CustomError{Message: "Error fetching nonce", Err: err}
 	}
 
 	var result struct {
 		Nonce uint64 `json:"nonce"`
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
-	}
-
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing JSON response: %w", err)
+		return nil, &CustomError{Message: "Error parsing JSON response", Err: err}
 	}
 
-	nonce := big.NewInt(int64(result.Nonce))
-	return nonce, nil
+	return big.NewInt(int64(result.Nonce)), nil
 }
 
-func estimateTransactionFeeWithFallback(tx TokenTransferTransaction, network stacks.StacksNetwork) (*big.Int, error) {
-	fee, err := estimateTransaction(tx, network)
-	if err == nil {
-		return fee, nil
-	}
-
-	return estimateTransferUnsafe(tx, network)
-}
-
-func estimateTransaction(tx TokenTransferTransaction, network stacks.StacksNetwork) (*big.Int, error) {
+func estimateTransactionFee(tx StacksTransaction, network stacks.StacksNetwork) (*big.Int, error) {
 	url := network.GetTransactionFeeEstimateAPIURL()
+	serializedTxPayload, err := tx.GetPayload().Serialize()
+	if err != nil {
+		return nil, &CustomError{Message: "Error serializing transaction payload", Err: err}
+	}
+
 	serializedTx, err := tx.Serialize()
 	if err != nil {
-		return nil, fmt.Errorf("error serializing transaction: %w", err)
-	}
-
-	byteLength, err := estimateTransactionByteLength(tx)
-	if err != nil {
-		return nil, fmt.Errorf("error estimating transaction byte length: %w", err)
+		return nil, fmt.Errorf("error serializing entire transaction: %w", err)
 	}
 
 	payload := map[string]interface{}{
-		"transaction_payload": serializedTx,
-		"estimated_len":       byteLength,
+		"transaction_payload": hex.EncodeToString(serializedTxPayload),
+		"estimated_len":       len(serializedTx),
 	}
 
-	jsonPayload, err := json.Marshal(payload)
+	body, err := makeRequest(url, "POST", payload)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling payload: %w", err)
-	}
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		return nil, fmt.Errorf("error sending estimation request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error estimating fee. Response %d: %s. URL: %s, Body: %s",
-			resp.StatusCode, resp.Status, url, string(body))
+		if strings.Contains(err.Error(), "NoEstimateAvailable") {
+			return estimateTransferUnsafe(tx, network)
+		}
+		return nil, &CustomError{Message: "Error estimating fee", Err: err}
 	}
 
 	var result struct {
-		EstimatedCost struct {
-			FeeRate string `json:"fee_rate"`
-		} `json:"estimated_cost"`
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
+		Estimations []struct {
+			FeeRate float64 `json:"fee_rate"`
+			Fee     int64   `json:"fee"`
+		} `json:"estimations"`
 	}
 
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing JSON response: %w", err)
+		return nil, &CustomError{Message: "Error parsing JSON response", Err: err}
 	}
 
-	fee, success := new(big.Int).SetString(result.EstimatedCost.FeeRate, 10)
-	if !success {
-		return nil, fmt.Errorf("failed to parse fee as big.Int: %s", result.EstimatedCost.FeeRate)
+	if len(result.Estimations) < 2 {
+		return nil, &CustomError{Message: "Insufficient estimations in response"}
 	}
+
+	fee := big.NewInt(result.Estimations[1].Fee)
 
 	return fee, nil
 }
 
-func estimateTransferUnsafe(tx TokenTransferTransaction, network stacks.StacksNetwork) (*big.Int, error) {
+func estimateTransferUnsafe(tx StacksTransaction, network stacks.StacksNetwork) (*big.Int, error) {
 	url := network.GetTransferFeeEstimateAPIURL()
-
-	resp, err := http.Get(url)
+	body, err := makeRequest(url, "GET", nil)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching fee estimate: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error fetching fee estimate. Response %d: %s. URL: %s, Body: %s",
-			resp.StatusCode, resp.Status, url, string(body))
+		return nil, &CustomError{Message: "Error fetching unsafe fee estimate", Err: err}
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	feeRate, err := strconv.ParseInt(string(body), 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
+		return nil, &CustomError{Message: "Error parsing unsafe fee estimate", Err: err}
 	}
 
-	feeRate, success := new(big.Int).SetString(string(body), 10)
-	if !success {
-		return nil, fmt.Errorf("failed to parse fee rate as big.Int: %s", string(body))
-	}
-
-	txBytes, err := tx.Serialize()
+	serializedTx, err := tx.Serialize()
 	if err != nil {
-		return nil, fmt.Errorf("error serializing transaction: %w", err)
+		return nil, &CustomError{Message: "Error serializing transaction", Err: err}
 	}
 
-	txBytesLen := big.NewInt(int64(len(txBytes)))
-	fee := new(big.Int).Mul(feeRate, txBytesLen)
+	txBytes := big.NewInt(int64(len(serializedTx)))
+	fee := big.NewInt(feeRate)
+	fee.Mul(fee, txBytes)
 
 	return fee, nil
+}
+
+func createAndSignTransaction(tx StacksTransaction, network stacks.StacksNetwork, senderAddress string, senderKey []byte, fee *big.Int, nonce *big.Int) error {
+	var err error
+	if fee == nil {
+		fee, err = estimateTransactionFee(tx, network)
+		if err != nil {
+			return &CustomError{Message: "Failed to estimate fee", Err: err}
+		}
+	}
+
+	if nonce == nil {
+		nonce, err = getNonce(senderAddress, network)
+		if err != nil {
+			return &CustomError{Message: "Failed to fetch nonce", Err: err}
+		}
+	}
+
+	auth := tx.GetAuth()
+	if auth == nil {
+		return &CustomError{Message: "Transaction authentication is nil"}
+	}
+
+	auth.OriginAuth.Fee = fee.Uint64()
+	auth.OriginAuth.Nonce = nonce.Uint64()
+
+	err = SignTransaction(tx, senderKey)
+	if err != nil {
+		return &CustomError{Message: "Failed to sign transaction", Err: err}
+	}
+
+	return nil
+}
+
+func deriveSigner(senderKey []byte) [20]byte {
+	senderPublicKey := crypto.GetPublicKeyFromPrivate(senderKey)
+	var signer [20]byte
+	copy(signer[:], crypto.Hash160(senderPublicKey))
+	return signer
 }
 
 func MakeSTXTokenTransfer(
@@ -159,94 +194,84 @@ func MakeSTXTokenTransfer(
 	nonce *big.Int,
 ) (*TokenTransferTransaction, error) {
 	if recipient == "" || len(senderKey) == 0 {
-		return nil, fmt.Errorf("invalid parameters: recipient or senderKey are empty")
+		return nil, &CustomError{Message: "Invalid parameters: recipient or senderKey are empty"}
 	}
 
-	// senderPublicKey := crypto.GetPublicKeyFromPrivate(senderKey)
-	var signer [20]byte
-	// copy(signer[:], crypto.Hash160(senderPublicKey))
+	signer := deriveSigner(senderKey)
 
 	tx, err := NewTokenTransferTransaction(recipient, amount.Uint64(), memo, network.Version, network.ChainID, signer, 0, 0, stacks.AnchorModeOnChainOnly, stacks.PostConditionModeDeny)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create transaction: %w", err)
+		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
 	}
 
-	if fee == nil {
-		estimatedFee, err := estimateTransactionFeeWithFallback(*tx, network)
-		if err != nil {
-			return nil, fmt.Errorf("failed to estimate fee: %w", err)
-		}
-		fee = estimatedFee
+	err = createAndSignTransaction(tx, network, senderAddress, senderKey, fee, nonce)
+	if err != nil {
+		return nil, err
 	}
-
-	if nonce == nil {
-		fetchedNonce, err := getNonce(senderAddress, network)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch nonce: %w", err)
-		}
-		nonce = fetchedNonce
-	}
-
-	tx.Auth.OriginAuth.Fee = fee.Uint64()
-	tx.Auth.OriginAuth.Nonce = nonce.Uint64()
-
-	// err = crypto.SignTransaction(tx, senderKey)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to sign transaction: %w", err)
-	// }
 
 	return tx, nil
 }
 
-func estimateTransactionByteLength(tx TokenTransferTransaction) (int, error) {
-	serializedTx, err := tx.Serialize()
-	if err != nil {
-		return 0, fmt.Errorf("error serializing transaction: %w", err)
+func MakeContractCall(
+	contractAddress string,
+	contractName string,
+	functionName string,
+	functionArgs []clarity.ClarityValue,
+	network stacks.StacksNetwork,
+	senderAddress string,
+	senderKey []byte,
+	fee *big.Int,
+	nonce *big.Int,
+) (*ContractCallTransaction, error) {
+	if contractAddress == "" || contractName == "" || functionName == "" || len(senderKey) == 0 {
+		return nil, &CustomError{Message: "Invalid parameters: contractAddress, contractName, functionName, or senderKey are empty"}
 	}
 
-	return len(serializedTx), nil
+	signer := deriveSigner(senderKey)
+
+	tx, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, network.Version, network.ChainID, signer, 0, 0, stacks.AnchorModeOnChainOnly, stacks.PostConditionModeDeny)
+	if err != nil {
+		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
+	}
+
+	err = createAndSignTransaction(tx, network, senderAddress, senderKey, fee, nonce)
+	if err != nil {
+		return nil, err
+	}
+
+	return tx, nil
 }
 
-type BroadcastResponse struct {
-	TxId string `json:"txid"`
-}
-
-func BroadcastTransaction(tx TokenTransferTransaction, network stacks.StacksNetwork) (string, error) {
+func BroadcastTransaction(tx StacksTransaction, network *stacks.StacksNetwork) (string, error) {
 	serializedTx, err := tx.Serialize()
 	if err != nil {
-		return "", fmt.Errorf("failed to serialize transaction: %w", err)
+		return "", &CustomError{Message: "Failed to serialize transaction", Err: err}
 	}
 
 	url := network.GetBroadcastAPIURL()
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("Content-Type", "application/octet-stream").
+		SetBody(serializedTx).
+		Post(url)
 
-	requestBody := bytes.NewBuffer(serializedTx)
-
-	resp, err := http.Post(url, "application/octet-stream", requestBody)
 	if err != nil {
-		return "", fmt.Errorf("failed to send transaction: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return "", &CustomError{Message: "Failed to send transaction", Err: err}
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("broadcast failed with status %d: %s", resp.StatusCode, string(body))
+	text := string(resp.Body())
+
+	if resp.StatusCode() != http.StatusOK {
+		return "", &CustomError{Message: fmt.Sprintf("Transaction submission failed with status code: %d, body: %s", resp.StatusCode(), text)}
 	}
 
-	var broadcastResp BroadcastResponse
-	err = json.Unmarshal(body, &broadcastResp)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse response: %w", err)
+	txId := strings.Trim(text, "\"")
+
+	if !isValidTransactionID(txId) {
+		return "", &CustomError{Message: fmt.Sprintf("Received invalid transaction ID: %s", txId)}
 	}
 
-	if !isValidTransactionID(broadcastResp.TxId) {
-		return "", fmt.Errorf("received invalid transaction ID: %s", broadcastResp.TxId)
-	}
-
-	return broadcastResp.TxId, nil
+	return txId, nil
 }
 
 func isValidTransactionID(txID string) bool {

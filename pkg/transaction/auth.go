@@ -26,6 +26,30 @@ type SpendingCondition struct {
 	Signature   [stacks.RecoverableECDSASigLengthBytes]byte
 }
 
+func (t *TokenTransferTransaction) GetAuth() *TransactionAuth {
+	return &t.Auth
+}
+
+func (t *ContractCallTransaction) GetAuth() *TransactionAuth {
+	return &t.Auth
+}
+
+func (t *TokenTransferTransaction) Sign(privateKey []byte) error {
+	return SignTransaction(t, privateKey)
+}
+
+func (t *TokenTransferTransaction) Verify(publicKey []byte) (bool, error) {
+	return VerifyTransaction(t, publicKey)
+}
+
+func (t *ContractCallTransaction) Sign(privateKey []byte) error {
+	return SignTransaction(t, privateKey)
+}
+
+func (t *ContractCallTransaction) Verify(publicKey []byte) (bool, error) {
+	return VerifyTransaction(t, publicKey)
+}
+
 func (auth *TransactionAuth) Serialize() ([]byte, error) {
 	buf := make([]byte, 0, 256)
 
@@ -127,14 +151,15 @@ func (sc *SpendingCondition) Deserialize(data []byte) (int, error) {
 	return 103, nil
 }
 
-func SignTransaction(tx *TokenTransferTransaction, privateKey []byte) error {
+func SignTransaction(tx StacksTransaction, privateKey []byte) error {
+	txCopy := tx.Clone()
+
 	// 1. Set the fee and nonce to 0, and set the signature bytes to 0
-	txCopy := *tx
+	authCopy := txCopy.GetAuth()
 
-	txCopy.Auth.OriginAuth.Signature = [65]byte{}
-
-	txCopy.Auth.OriginAuth.Nonce = 0
-	txCopy.Auth.OriginAuth.Fee = 0
+	authCopy.OriginAuth.Signature = [65]byte{}
+	authCopy.OriginAuth.Nonce = 0
+	authCopy.OriginAuth.Fee = 0
 
 	// 2. Serialize the transaction
 	serializedTx, err := txCopy.Serialize()
@@ -146,7 +171,8 @@ func SignTransaction(tx *TokenTransferTransaction, privateKey []byte) error {
 	sighash := crypto.CalculateSighash(serializedTx)
 
 	// 4. Calculate the presign-sighash
-	presignSighash := crypto.CalculatePresignSighash(sighash, tx.Auth.AuthType, tx.Auth.OriginAuth.Fee, tx.Auth.OriginAuth.Nonce)
+	originalAuth := tx.GetAuth()
+	presignSighash := crypto.CalculatePresignSighash(sighash, originalAuth.AuthType, originalAuth.OriginAuth.Fee, originalAuth.OriginAuth.Nonce)
 
 	// 5. Sign the presign-sighash
 	signature, err := crypto.SignWithKey(privateKey, hex.EncodeToString(presignSighash))
@@ -156,21 +182,22 @@ func SignTransaction(tx *TokenTransferTransaction, privateKey []byte) error {
 
 	// 6. Set the signature in the spending condition
 	signatureBytes, _ := hex.DecodeString(signature.Data)
-	copy(tx.Auth.OriginAuth.Signature[:], signatureBytes)
+	copy(originalAuth.OriginAuth.Signature[:], signatureBytes)
 
 	return nil
 }
 
-func VerifyTransaction(tx *TokenTransferTransaction, publicKey []byte) (bool, error) {
-	txCopy := *tx
+func VerifyTransaction(tx StacksTransaction, publicKey []byte) (bool, error) {
+	txCopy := tx.Clone()
 
 	// 1. Extract the signature
-	signature := txCopy.Auth.OriginAuth.Signature
+	authCopy := txCopy.GetAuth()
+	signature := authCopy.OriginAuth.Signature
 
 	// 2. Clear the signature in the spending condition
-	txCopy.Auth.OriginAuth.Signature = [stacks.RecoverableECDSASigLengthBytes]byte{}
-	txCopy.Auth.OriginAuth.Nonce = 0
-	txCopy.Auth.OriginAuth.Fee = 0
+	authCopy.OriginAuth.Signature = [stacks.RecoverableECDSASigLengthBytes]byte{}
+	authCopy.OriginAuth.Nonce = 0
+	authCopy.OriginAuth.Fee = 0
 
 	// 3. Serialize the transaction
 	serializedTx, err := txCopy.Serialize()
@@ -182,7 +209,8 @@ func VerifyTransaction(tx *TokenTransferTransaction, publicKey []byte) (bool, er
 	sighash := crypto.CalculateSighash(serializedTx)
 
 	// 5. Calculate the presign-sighash
-	presignSighash := crypto.CalculatePresignSighash(sighash, tx.Auth.AuthType, tx.Auth.OriginAuth.Fee, tx.Auth.OriginAuth.Nonce)
+	originalAuth := tx.GetAuth()
+	presignSighash := crypto.CalculatePresignSighash(sighash, originalAuth.AuthType, originalAuth.OriginAuth.Fee, originalAuth.OriginAuth.Nonce)
 
 	// 6. Verify the signature
 	messageSignature := crypto.MessageSignature{

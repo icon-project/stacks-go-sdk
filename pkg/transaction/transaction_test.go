@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/icon-project/stacks-go-sdk/pkg/clarity"
+	"github.com/icon-project/stacks-go-sdk/pkg/crypto"
 	"github.com/icon-project/stacks-go-sdk/pkg/stacks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -171,6 +172,107 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 			assertTokenTransferTransactionFields(t, deserializedTx, tt)
 		})
 	}
+}
+
+func TestContractCallTransactionSerializationAndDeserialization(t *testing.T) {
+	transactionVersion := stacks.TransactionVersionTestnet
+	chainID := stacks.ChainIDTestnet
+	anchorMode := stacks.AnchorModeOnChainOnly
+	postConditionMode := stacks.PostConditionModeDeny
+
+	contractAddress := "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
+	contractName := "test-contract"
+	functionName := "test-function"
+
+	intArg, err := clarity.NewInt(1)
+	require.NoError(t, err, "Failed to create int argument")
+
+	strArg, err := clarity.NewStringASCII("test")
+	require.NoError(t, err, "Failed to create string argument")
+
+	functionArgs := []clarity.ClarityValue{
+		intArg,
+		clarity.NewBool(true),
+		strArg,
+	}
+
+	addressHashMode := stacks.AddressHashModeSerializeP2PKH
+	nonce := uint64(10)
+	fee := uint64(456)
+
+	pubKey := "0332fc778e5beb5f944c75b2b63c21dd12c40bdcdf99ba0663168ae0b2be880aef"
+	pubKeyBytes, err := hex.DecodeString(pubKey)
+	assert.NoError(t, err)
+
+	secretKey := "c1d5bb638aa70862621667f9997711fce692cad782694103f8d9561f62e9f19701"
+	secretKeyBytes, err := hex.DecodeString(secretKey)
+	assert.NoError(t, err)
+
+	senderPublicKey := crypto.GetPublicKeyFromPrivate(secretKeyBytes)
+	var signer [20]byte
+	copy(signer[:], crypto.Hash160(senderPublicKey))
+
+	transaction, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, transactionVersion, chainID, signer, nonce, fee, anchorMode, postConditionMode)
+	assert.NoError(t, err)
+
+	err = SignTransaction(transaction, secretKeyBytes)
+	assert.NoError(t, err)
+
+	isValid, err := VerifyTransaction(transaction, pubKeyBytes)
+	assert.NoError(t, err)
+	assert.True(t, isValid)
+
+	serialized, err := transaction.Serialize()
+	assert.NoError(t, err)
+
+	deserialized, err := DeserializeTransaction(serialized)
+	assert.NoError(t, err)
+
+	contractTx, ok := deserialized.(*ContractCallTransaction)
+	assert.True(t, ok, "Deserialized transaction is not a ContractCallTransaction")
+
+	assert.Equal(t, transactionVersion, contractTx.Version)
+	assert.Equal(t, chainID, contractTx.ChainID)
+	assert.Equal(t, stacks.AuthTypeStandard, contractTx.Auth.AuthType)
+	assert.Equal(t, addressHashMode, contractTx.Auth.OriginAuth.HashMode)
+	assert.Equal(t, nonce, contractTx.Auth.OriginAuth.Nonce)
+	assert.Equal(t, fee, contractTx.Auth.OriginAuth.Fee)
+	assert.Equal(t, anchorMode, contractTx.AnchorMode)
+	assert.Equal(t, postConditionMode, contractTx.PostConditionMode)
+	assert.Empty(t, contractTx.PostConditions)
+
+	contractPrincipal, _ := clarity.StringToPrincipal(contractAddress)
+
+	assert.Equal(t, contractPrincipal, contractTx.Payload.ContractAddress)
+	assert.Equal(t, contractName, contractTx.Payload.ContractName)
+	assert.Equal(t, functionName, contractTx.Payload.FunctionName)
+	assert.Equal(t, len(functionArgs), len(contractTx.Payload.FunctionArgs))
+
+	for i, arg := range functionArgs {
+		assert.Equal(t, arg.Type(), contractTx.Payload.FunctionArgs[i].Type())
+		switch typedArg := arg.(type) {
+		case *clarity.Int:
+			deserializedArg, ok := contractTx.Payload.FunctionArgs[i].(*clarity.Int)
+			assert.True(t, ok)
+			assert.Equal(t, 0, typedArg.Value.Cmp(deserializedArg.Value))
+		case clarity.Bool:
+			deserializedArg, ok := contractTx.Payload.FunctionArgs[i].(clarity.Bool)
+			assert.True(t, ok)
+			assert.Equal(t, typedArg, deserializedArg)
+		case *clarity.StringASCII:
+			deserializedArg, ok := contractTx.Payload.FunctionArgs[i].(*clarity.StringASCII)
+			assert.True(t, ok)
+			assert.Equal(t, typedArg.Data, deserializedArg.Data)
+		}
+	}
+
+	isValid, err = VerifyTransaction(contractTx, pubKeyBytes)
+	assert.NoError(t, err)
+	assert.True(t, isValid)
+
+	reserializedBytes, err := deserialized.Serialize()
+	assert.NoError(t, err)
+	assert.Equal(t, serialized, reserializedBytes)
 }
 
 func assertTokenTransferTransactionFields(t *testing.T, tx *TokenTransferTransaction, expected struct {

@@ -12,6 +12,9 @@ import (
 type StacksTransaction interface {
 	Serialize() ([]byte, error)
 	Deserialize([]byte) error
+	GetAuth() *TransactionAuth
+	GetPayload() Payload
+	Clone() StacksTransaction
 }
 
 type BaseTransaction struct {
@@ -31,6 +34,16 @@ type TokenTransferTransaction struct {
 type ContractCallTransaction struct {
 	BaseTransaction
 	Payload ContractCallPayload
+}
+
+func (t *TokenTransferTransaction) Clone() StacksTransaction {
+	clone := *t
+	return &clone
+}
+
+func (t *ContractCallTransaction) Clone() StacksTransaction {
+	clone := *t
+	return &clone
 }
 
 func NewTokenTransferTransaction(
@@ -72,21 +85,44 @@ func NewTokenTransferTransaction(
 	}, nil
 }
 
-func NewContractCallTransaction(contractAddress, contractName, functionName string, functionArgs []clarity.ClarityValue) *ContractCallTransaction {
+func NewContractCallTransaction(
+	contractAddress string,
+	contractName string,
+	functionName string,
+	functionArgs []clarity.ClarityValue,
+	version stacks.TransactionVersion,
+	chainID stacks.ChainID,
+	signer [20]byte,
+	nonce uint64,
+	fee uint64,
+	anchorMode stacks.AnchorMode,
+	postConditionMode stacks.PostConditionMode) (*ContractCallTransaction, error) {
+	payload, err := NewContractCallPayload(contractAddress, contractName, functionName, functionArgs)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ContractCallTransaction{
 		BaseTransaction: BaseTransaction{
-			Version:           stacks.TransactionVersionMainnet,
-			ChainID:           stacks.ChainIDMainnet,
-			AnchorMode:        stacks.AnchorModeOnChainOnly,
-			PostConditionMode: stacks.PostConditionModeAllow,
+			Version: version,
+			ChainID: chainID,
+			Auth: TransactionAuth{
+				AuthType: stacks.AuthTypeStandard,
+				OriginAuth: SpendingCondition{
+					HashMode:    stacks.AddressHashModeSerializeP2PKH,
+					Signer:      signer,
+					Nonce:       nonce,
+					Fee:         fee,
+					KeyEncoding: stacks.PubKeyEncodingCompressed,
+					Signature:   [65]byte{}, // This will be filled when signing the transaction
+				},
+			},
+			AnchorMode:        anchorMode,
+			PostConditionMode: postConditionMode,
+			PostConditions:    []PostCondition{}, // Empty post condition
 		},
-		Payload: ContractCallPayload{
-			ContractAddress: contractAddress,
-			ContractName:    contractName,
-			FunctionName:    functionName,
-			FunctionArgs:    functionArgs,
-		},
-	}
+		Payload: *payload,
+	}, nil
 }
 
 func (t *TokenTransferTransaction) Serialize() ([]byte, error) {
@@ -106,10 +142,8 @@ func (t *TokenTransferTransaction) Serialize() ([]byte, error) {
 	buf = append(buf, byte(t.AnchorMode))
 	buf = append(buf, byte(t.PostConditionMode))
 
-	// assumes post condition is empty
-	postConditionsLenBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(postConditionsLenBytes, uint32(len(t.PostConditions)))
-	buf = append(buf, postConditionsLenBytes...)
+	postConditionsBytes := SerializePostConditions(t.PostConditions)
+	buf = append(buf, postConditionsBytes...)
 
 	payloadBytes, err := t.Payload.Serialize()
 	if err != nil {
@@ -175,6 +209,37 @@ func (t *TokenTransferTransaction) Deserialize(data []byte) error {
 	return nil
 }
 
+func (t *ContractCallTransaction) Serialize() ([]byte, error) {
+	buf := make([]byte, 0, 128)
+
+	buf = append(buf, byte(t.Version))
+
+	chainIDBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(chainIDBytes, uint32(t.ChainID))
+	buf = append(buf, chainIDBytes...)
+
+	authBytes, err := t.Auth.Serialize()
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize auth: %w", err)
+	}
+	buf = append(buf, authBytes...)
+
+	buf = append(buf, byte(t.AnchorMode))
+
+	buf = append(buf, byte(t.PostConditionMode))
+
+	postConditionsBytes := SerializePostConditions(t.PostConditions)
+	buf = append(buf, postConditionsBytes...)
+
+	payloadBytes, err := t.Payload.Serialize()
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize contract call payload: %w", err)
+	}
+	buf = append(buf, payloadBytes...)
+
+	return buf, nil
+}
+
 func (t *ContractCallTransaction) Deserialize(data []byte) error {
 	if len(data) < 7 {
 		return errors.New("insufficient data for transaction")
@@ -228,39 +293,6 @@ func (t *ContractCallTransaction) Deserialize(data []byte) error {
 	offset += payloadLen
 
 	return nil
-}
-
-func (t *ContractCallTransaction) Serialize() ([]byte, error) {
-	buf := make([]byte, 0, 256) // Initial capacity, adjust as needed
-
-	buf = append(buf, byte(t.Version))
-
-	chainIDBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(chainIDBytes, uint32(t.ChainID))
-	buf = append(buf, chainIDBytes...)
-
-	authBytes, err := t.Auth.Serialize()
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize auth: %w", err)
-	}
-	buf = append(buf, authBytes...)
-
-	buf = append(buf, byte(t.AnchorMode))
-
-	buf = append(buf, byte(t.PostConditionMode))
-
-	postConditionsBytes := SerializePostConditions(t.PostConditions)
-	buf = append(buf, postConditionsBytes...)
-
-	buf = append(buf, byte(stacks.PayloadTypeContractCall))
-
-	payloadBytes, err := t.Payload.Serialize()
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize contract call payload: %w", err)
-	}
-	buf = append(buf, payloadBytes...)
-
-	return buf, nil
 }
 
 func DeserializeTransaction(data []byte) (StacksTransaction, error) {

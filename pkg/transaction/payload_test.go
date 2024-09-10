@@ -48,7 +48,7 @@ func TestTokenTransferPayloadToContractAddress(t *testing.T) {
 }
 
 func TestContractCallPayloadSerializationDeserialization(t *testing.T) {
-	contractAddress := "SP3FGQ8Z7JY9BWYZ5WM53E0M9NK7WHJF0691NZ159"
+	contractAddress := "ST3FGQ8Z7JY9BWYZ5WM53E0M9NK7WHJF0691NZ159"
 	contractName := "contract_name"
 	functionName := "function_name"
 	args := []clarity.ClarityValue{
@@ -56,12 +56,8 @@ func TestContractCallPayloadSerializationDeserialization(t *testing.T) {
 		clarity.NewBool(false),
 	}
 
-	payload := &ContractCallPayload{
-		ContractAddress: contractAddress,
-		ContractName:    contractName,
-		FunctionName:    functionName,
-		FunctionArgs:    args,
-	}
+	payload, err := NewContractCallPayload(contractAddress, contractName, functionName, args)
+	assert.NoError(t, err)
 
 	serialized, err := payload.Serialize()
 	assert.NoError(t, err)

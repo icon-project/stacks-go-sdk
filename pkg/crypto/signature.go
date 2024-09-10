@@ -40,7 +40,7 @@ func SignWithKey(privateKey []byte, messageHash string) (MessageSignature, error
 	}
 	signature := ecdsa.SignCompact(privKey, messageHashBytes, true)
 
-	recoveryID := signature[0] - 27 - 4
+	recoveryID := signature[0] - 27 - 4 // Remove the base Bitcoin offset (27) and account for account for compressed key flag (4). For more information, see https://github.com/btcsuite/btcd/blob/master/btcec/ecdsa/signature.go#L233
 	vrsSignature := fmt.Sprintf("%02x%s", recoveryID, hex.EncodeToString(signature[1:]))
 	return CreateMessageSignature(vrsSignature)
 }
