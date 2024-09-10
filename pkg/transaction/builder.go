@@ -254,7 +254,6 @@ func BroadcastTransaction(tx StacksTransaction, network *stacks.StacksNetwork) (
 		SetHeader("Content-Type", "application/octet-stream").
 		SetBody(serializedTx).
 		Post(url)
-
 	if err != nil {
 		return "", &CustomError{Message: "Failed to send transaction", Err: err}
 	}

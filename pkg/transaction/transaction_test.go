@@ -287,7 +287,8 @@ func assertTokenTransferTransactionFields(t *testing.T, tx *TokenTransferTransac
 	fee               uint64
 	anchorMode        stacks.AnchorMode
 	postConditionMode stacks.PostConditionMode
-}) {
+},
+) {
 	assert.Equal(t, expected.version, tx.Version)
 	assert.Equal(t, expected.chainID, tx.ChainID)
 	assert.Equal(t, expected.signer, tx.Auth.OriginAuth.Signer)

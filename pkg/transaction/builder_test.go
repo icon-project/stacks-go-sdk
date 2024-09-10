@@ -20,7 +20,6 @@ func TestMakeSTXTokenTransfer(t *testing.T) {
 	senderKey, _ := hex.DecodeString(senderKeyHex)
 
 	tx, err := MakeSTXTokenTransfer(recipient, *amount, memo, *network, senderAddress, senderKey, nil, nil)
-
 	if err != nil {
 		t.Fatalf("makeSTXTokenTransfer failed: %v", err)
 	}
@@ -63,7 +62,6 @@ func TestMakeSTXTokenTransfer(t *testing.T) {
 	specifiedFee := big.NewInt(180)
 	specifiedNonce := big.NewInt(3)
 	tx2, err := MakeSTXTokenTransfer(recipient, *amount, memo, *network, senderAddress, senderKey, specifiedFee, specifiedNonce)
-
 	if err != nil {
 		t.Fatalf("makeSTXTokenTransfer with specified fee and nonce failed: %v", err)
 	}

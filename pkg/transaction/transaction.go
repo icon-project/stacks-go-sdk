@@ -96,7 +96,8 @@ func NewContractCallTransaction(
 	nonce uint64,
 	fee uint64,
 	anchorMode stacks.AnchorMode,
-	postConditionMode stacks.PostConditionMode) (*ContractCallTransaction, error) {
+	postConditionMode stacks.PostConditionMode,
+) (*ContractCallTransaction, error) {
 	payload, err := NewContractCallPayload(contractAddress, contractName, functionName, functionArgs)
 	if err != nil {
 		return nil, err
