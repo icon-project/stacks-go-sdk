@@ -72,9 +72,9 @@ func SerializeAddress(address string) ([]byte, error) {
 	var version byte
 	switch address[0] {
 	case 'S':
-		version = 22 // Mainnet single-sig
+		version = byte(stacks.AddressVersionMainnetSingleSig)
 	case 'T':
-		version = 26 // Testnet single-sig
+		version = byte(stacks.AddressVersionTestnetSingleSig)
 	default:
 		return nil, fmt.Errorf("invalid address version: %c", address[0])
 	}

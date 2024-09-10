@@ -302,3 +302,18 @@ func TestUIntBounds(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestAddressSerialization(t *testing.T) {
+	address := "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.test-contract"
+	expectedSerialized := "061a6d78de7b0625dfbfc16c3a8a5735f6dc3dc3f2ce0d746573742d636f6e7472616374"
+
+	addr, err := StringToPrincipal(address)
+	assert.NoError(t, err)
+
+	serialized, err := addr.Serialize()
+	assert.NoError(t, err)
+
+	serializedHex := hex.EncodeToString(serialized)
+
+	assert.Equal(t, expectedSerialized, serializedHex)
+}

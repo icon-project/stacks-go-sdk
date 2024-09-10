@@ -61,6 +61,53 @@ func main() {
 }
 ```
 
+### Creating and Broadcasting a Token Transfer Transaction
+```go
+import (
+    "github.com/balancednetwork/stacks-go-sdk/stacks"
+    "github.com/balancednetwork/stacks-go-sdk/clarity"
+)
+
+func main() {
+    network := stacks.NewStacksMainnet()
+
+    contractAddress := "SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27"
+    contractName := "contract-name"
+    functionName := "function-name"
+    senderAddress := "SP1P72Z3704VMT3DMHPP2CB8TGQWGDBHD3RPR9GZS"
+    senderKey := []byte{...}  // sender's private key
+
+    // Prepare function arguments
+    arg1, _ := clarity.NewInt(123)
+    arg2 := clarity.NewStringType("example")
+    functionArgs := []clarity.ClarityValue{arg1, arg2}
+
+    // Create and sign the transaction
+    tx, err := stacks.MakeContractCall(
+        contractAddress,
+        contractName,
+        functionName,
+        functionArgs,
+        *network,
+        senderAddress,
+        senderKey,
+        nil,  // Let the function estimate the fee
+        nil,  // Let the function fetch the nonce
+    )
+    if err != nil {
+        // Handle error
+    }
+
+    // Broadcast the transaction
+    txID, err := stacks.BroadcastTransaction(tx, network)
+    if err != nil {
+        // Handle error
+    }
+
+    println("Contract call transaction broadcast successfully. Transaction ID:", txID)
+}
+```
+
 ### Working with Clarity Values
 ```golang
 import (
