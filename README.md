@@ -141,6 +141,10 @@ func main() {
 
 The `rpc_client` package is automatically generated from the [Stacks RPC OpenAPI specification](https://github.com/stacks-network/stacks-core/blob/master/docs/rpc/openapi.yaml). Some modifications are made after generation.
 
+## Stacks Blockchain API Client
+ 
+The `stacks_blockchain_api_client` package is automatically generated from the Stacks Blockchain API OpenAPI specification. The script to build the specification and generate the Go client is in [scripts/generate_stacks_blockchain_api.sh](scripts/generate_stacks_blockchain_api.sh).
+
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
