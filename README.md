@@ -137,6 +137,10 @@ func main() {
 }
 ```
 
+## Stacks RPC Client
+
+The `rpc_client` package is automatically generated from the [Stacks RPC OpenAPI specification](https://github.com/stacks-network/stacks-core/blob/master/docs/rpc/openapi.yaml). Some modifications are made after generation.
+
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
