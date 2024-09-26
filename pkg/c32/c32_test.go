@@ -100,8 +100,6 @@ func TestC32CheckEncodeDecode(t *testing.T) {
 		t.Fatalf("Failed to serialize address: %v", err)
 	}
 
-	t.Logf("Encoded Address: %s", address)
-
 	version, decodedHash, err := DeserializeAddress(address)
 	if err != nil {
 		t.Fatalf("Failed to deserialize address: %v", err)

@@ -1,6 +1,7 @@
 package c32
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -91,40 +92,45 @@ func DecodeC32Address(address string) (version byte, hash160 [20]byte, err error
 }
 
 func DecodeWithChecksum(c32addr string) (byte, []byte, error) {
-	if len(c32addr) < 1 {
+	if len(c32addr) < 2 {
 		return 0, nil, errors.New("address too short")
 	}
 	if c32addr[0] != 'S' {
 		return 0, nil, errors.New("address must start with 'S'")
 	}
 
-	c32str := c32addr[1:]
+	// Extract and decode the version character
+	versionChar := c32addr[1]
+	version := byte(strings.IndexRune(crockfordAlphabet, rune(versionChar)))
+	if version == 255 { // strings.IndexRune returns -1 if not found, which becomes 255 as byte
+		return 0, nil, errors.New("invalid version character")
+	}
 
+	// Decode the remaining C32 string
+	c32str := c32addr[2:]
 	data, err := C32Decode(c32str)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	if len(data) != 1+stacks.AddressHashLength+4 {
-		return 0, nil, fmt.Errorf("invalid decoded length: expected %d, got %d", 1+stacks.AddressHashLength+4, len(data))
+	// Expected length: data (20 bytes) + checksum (4 bytes)
+	expectedLength := stacks.AddressHashLength + 4
+	if len(data) != expectedLength {
+		return 0, nil, fmt.Errorf("invalid decoded length: expected %d, got %d", expectedLength, len(data))
 	}
 
-	version := data[0]
-	payload := data[1 : 1+stacks.AddressHashLength]
-	checksum := data[1+stacks.AddressHashLength:]
+	payload := data[:stacks.AddressHashLength]
+	checksum := data[stacks.AddressHashLength:]
 
 	// Recompute checksum
 	versionedData := append([]byte{version}, payload...)
 	computedChecksum := sha256.Sum256(versionedData)
 	computedChecksum = sha256.Sum256(computedChecksum[:])
-	computedChecksum = sha256.Sum256(computedChecksum[:])
 	computedChecksumBytes := computedChecksum[:4]
 
 	// Compare checksums
-	for i := 0; i < 4; i++ {
-		if checksum[i] != computedChecksumBytes[i] {
-			return 0, nil, errors.New("checksum mismatch")
-		}
+	if !bytes.Equal(checksum, computedChecksumBytes) {
+		return 0, nil, errors.New("checksum mismatch")
 	}
 
 	return version, payload, nil
