@@ -1,7 +1,7 @@
 package c32
 
 import (
-	"encoding/base32"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"math/big"
@@ -12,9 +12,35 @@ import (
 
 var crockfordAlphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
-func C32Encode(input []byte) string {
-	encoder := base32.NewEncoding(crockfordAlphabet).WithPadding(base32.NoPadding)
-	return encoder.EncodeToString(input)
+func C32Encode(data []byte) string {
+	// Convert bytes to big.Int
+	bi := new(big.Int).SetBytes(data)
+
+	// Convert big.Int to base32 string
+	var encoded strings.Builder
+	for bi.Cmp(big.NewInt(0)) > 0 {
+		mod := new(big.Int)
+		bi.DivMod(bi, big.NewInt(32), mod)
+		encoded.WriteByte(crockfordAlphabet[mod.Int64()])
+	}
+
+	// Reverse the string
+	encodedStr := reverseString(encoded.String())
+
+	// Handle leading zeros
+	leadingZeros := 0
+	for _, b := range data {
+		if b == 0 {
+			leadingZeros++
+		} else {
+			break
+		}
+	}
+	for i := 0; i < leadingZeros; i++ {
+		encodedStr = "0" + encodedStr
+	}
+
+	return encodedStr
 }
 
 func C32Decode(input string) ([]byte, error) {
@@ -64,51 +90,96 @@ func DecodeC32Address(address string) (version byte, hash160 [20]byte, err error
 	return version, hash160, nil
 }
 
-func SerializeAddress(address string) ([]byte, error) {
-	if len(address) != 1+20*2 { // 'S' + version + 40 hex chars
-		return nil, fmt.Errorf("invalid address length: %d", len(address))
+func DecodeWithChecksum(c32addr string) (byte, []byte, error) {
+	if len(c32addr) < 1 {
+		return 0, nil, errors.New("address too short")
+	}
+	if c32addr[0] != 'S' {
+		return 0, nil, errors.New("address must start with 'S'")
 	}
 
-	var version byte
-	switch address[0] {
-	case 'S':
-		version = byte(stacks.AddressVersionMainnetSingleSig)
-	case 'T':
-		version = byte(stacks.AddressVersionTestnetSingleSig)
-	default:
-		return nil, fmt.Errorf("invalid address version: %c", address[0])
-	}
+	c32str := c32addr[1:]
 
-	hashBytes, err := C32Decode(address[1:])
+	data, err := C32Decode(c32str)
 	if err != nil {
-		return nil, fmt.Errorf("invalid address hash: %v", err)
+		return 0, nil, err
 	}
 
-	result := make([]byte, 1+len(hashBytes))
-	result[0] = version
-	copy(result[1:], hashBytes)
+	if len(data) != 1+stacks.AddressHashLength+4 {
+		return 0, nil, fmt.Errorf("invalid decoded length: expected %d, got %d", 1+stacks.AddressHashLength+4, len(data))
+	}
 
-	return result, nil
+	version := data[0]
+	payload := data[1 : 1+stacks.AddressHashLength]
+	checksum := data[1+stacks.AddressHashLength:]
+
+	// Recompute checksum
+	versionedData := append([]byte{version}, payload...)
+	computedChecksum := sha256.Sum256(versionedData)
+	computedChecksum = sha256.Sum256(computedChecksum[:])
+	computedChecksum = sha256.Sum256(computedChecksum[:])
+	computedChecksumBytes := computedChecksum[:4]
+
+	// Compare checksums
+	for i := 0; i < 4; i++ {
+		if checksum[i] != computedChecksumBytes[i] {
+			return 0, nil, errors.New("checksum mismatch")
+		}
+	}
+
+	return version, payload, nil
 }
 
-func DeserializeAddress(data []byte) (string, int, error) {
-	if len(data) < 1+stacks.AddressHashLength {
-		return "", 0, errors.New("insufficient data for address")
+func EncodeWithChecksum(version byte, data []byte) (string, error) {
+	if len(data) != stacks.AddressHashLength {
+		return "", errors.New("data must be 20 bytes for P2PKH")
 	}
 
-	version := stacks.AddressVersion(data[0])
-	var prefix string
+	// Version byte + data
+	versionedData := append([]byte{version}, data...)
+
+	// Compute checksum: double SHA256, first 4 bytes
+	checksum := sha256.Sum256(versionedData)
+	checksum = sha256.Sum256(checksum[:])
+	checksumBytes := checksum[:4]
+
+	// Append checksum
+	fullData := append(data, checksumBytes...)
+
+	// Encode to c32
+	c32str := C32Encode(fullData)
+
+	// Add prefix 'S'
+	return "S" + string(crockfordAlphabet[version]) + c32str, nil
+}
+
+func SerializeAddress(version stacks.AddressVersion, hash160 []byte) (string, error) {
+	return EncodeWithChecksum(byte(version), hash160)
+}
+
+func DeserializeAddress(address string) (stacks.AddressVersion, []byte, error) {
+	version, payload, err := DecodeWithChecksum(address)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var addrVersion stacks.AddressVersion
 	switch version {
-	case stacks.AddressVersionMainnetSingleSig:
-		prefix = "S"
-	case stacks.AddressVersionTestnetSingleSig:
-		prefix = "T"
+	case byte(stacks.AddressVersionMainnetSingleSig):
+		addrVersion = stacks.AddressVersionMainnetSingleSig
+	case byte(stacks.AddressVersionTestnetSingleSig):
+		addrVersion = stacks.AddressVersionTestnetSingleSig
 	default:
-		return "", 0, fmt.Errorf("invalid address version: %d", version)
+		return 0, nil, fmt.Errorf("unknown address version: %d", version)
 	}
 
-	c32hash := C32Encode(data[1 : 1+stacks.AddressHashLength+5])
-	address := fmt.Sprintf("%s%s", prefix, c32hash)
+	return addrVersion, payload, nil
+}
 
-	return address, 1 + stacks.AddressHashLength + 5, nil
+func reverseString(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
 }
