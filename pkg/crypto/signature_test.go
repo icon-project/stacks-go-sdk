@@ -137,3 +137,71 @@ func TestSignWithKey2(t *testing.T) {
 		t.Fatalf("SignWithKey signature mismatch. Got %s, want %s", signature.Data, expectedSignature)
 	}
 }
+
+func TestCalculateStacksAddress(t *testing.T) {
+	tests := []struct {
+		name            string
+		publicKeyHex    string
+		network         stacks.ChainID
+		expectedAddress string
+	}{
+		{
+			name:            "Testnet Address",
+			publicKeyHex:    "0332fc778e5beb5f944c75b2b63c21dd12c40bdcdf99ba0663168ae0b2be880aef",
+			network:         stacks.ChainIDTestnet,
+			expectedAddress: "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			publicKeyBytes, err := hex.DecodeString(tt.publicKeyHex)
+			if err != nil {
+				t.Fatalf("Failed to decode public key hex: %v", err)
+			}
+
+			address, err := CalculateStacksAddress(publicKeyBytes, tt.network)
+			if err != nil {
+				t.Fatalf("CalculateStacksAddress failed: %v", err)
+			}
+
+			if address != tt.expectedAddress {
+				t.Errorf("CalculateStacksAddress mismatch.\nGot:  %s\nWant: %s", address, tt.expectedAddress)
+			}
+		})
+	}
+}
+
+func TestGetAddressFromPrivateKey(t *testing.T) {
+	tests := []struct {
+		name            string
+		privateKeyHex   string
+		network         stacks.ChainID
+		expectedAddress string
+	}{
+		{
+			name:            "Mainnet Address from Private Key",
+			privateKeyHex:   "c1d5bb638aa70862621667f9997711fce692cad782694103f8d9561f62e9f19701",
+			network:         stacks.ChainIDTestnet,
+			expectedAddress: "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			privateKeyBytes, err := hex.DecodeString(tt.privateKeyHex)
+			if err != nil {
+				t.Fatalf("Failed to decode private key hex: %v", err)
+			}
+
+			address, err := GetAddressFromPrivateKey(privateKeyBytes, tt.network)
+			if err != nil {
+				t.Fatalf("GetAddressFromPrivateKey failed: %v", err)
+			}
+
+			if address != tt.expectedAddress {
+				t.Errorf("GetAddressFromPrivateKey mismatch.\nGot:  %s\nWant: %s", address, tt.expectedAddress)
+			}
+		})
+	}
+}

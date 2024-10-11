@@ -13,6 +13,7 @@ import (
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/icon-project/stacks-go-sdk/pkg/c32"
 	"github.com/icon-project/stacks-go-sdk/pkg/stacks"
 )
 
@@ -63,6 +64,54 @@ func CreateMessageSignature(signature string) (MessageSignature, error) {
 func GetPublicKeyFromPrivate(privateKey []byte) []byte {
 	_, pubKey := btcec.PrivKeyFromBytes(privateKey)
 	return pubKey.SerializeCompressed()
+}
+
+func GetAddressFromPrivateKey(privateKey []byte, network stacks.ChainID) (string, error) {
+	if len(privateKey) != 33 {
+		return "", errors.New("private key must be 33 bytes")
+	}
+
+	// Derive public key
+	privKey, pubKey := btcec.PrivKeyFromBytes(privateKey)
+	if privKey == nil || pubKey == nil {
+		return "", errors.New("invalid private key")
+	}
+
+	compressedPubKey := pubKey.SerializeCompressed()
+	address, err := CalculateStacksAddress(compressedPubKey, network)
+	if err != nil {
+		return "", err
+	}
+
+	return address, nil
+}
+
+func CalculateStacksAddress(pubKey []byte, network stacks.ChainID) (string, error) {
+	if len(pubKey) != 33 {
+		return "", errors.New("public key must be 33 bytes (compressed)")
+	}
+
+	// Perform SHA-256 hashing
+	pubKeyHash := Hash160(pubKey)
+
+	// Determine version based on network
+	var version stacks.AddressVersion
+	switch network {
+	case stacks.ChainIDMainnet:
+		version = stacks.AddressVersionMainnetSingleSig
+	case stacks.ChainIDTestnet:
+		version = stacks.AddressVersionTestnetSingleSig
+	default:
+		return "", fmt.Errorf("unsupported network: %d", network)
+	}
+
+	// Encode to c32check address
+	address, err := c32.SerializeAddress(version, pubKeyHash)
+	if err != nil {
+		return "", fmt.Errorf("failed to serialize address: %w", err)
+	}
+
+	return address, nil
 }
 
 func VerifySignature(messageHash string, signature MessageSignature, publicKey []byte) (bool, error) {

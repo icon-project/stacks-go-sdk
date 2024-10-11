@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"reflect"
 	"testing"
+
+	"github.com/icon-project/stacks-go-sdk/pkg/stacks"
 )
 
 func TestC32Decode(t *testing.T) {
@@ -84,5 +86,30 @@ func TestDecodeC32Address(t *testing.T) {
 				t.Errorf("DecodeC32Address() hash160 = %v, want %v", gotHash, tt.expectedHash)
 			}
 		})
+	}
+}
+
+func TestC32CheckEncodeDecode(t *testing.T) {
+	hash160, err := hex.DecodeString("1a2b3c4d5e6f7081920a1b2c3d4e5f60718293a4")
+	if err != nil {
+		t.Fatalf("Failed to decode hash160: %v", err)
+	}
+
+	address, err := SerializeAddress(stacks.AddressVersionMainnetSingleSig, hash160)
+	if err != nil {
+		t.Fatalf("Failed to serialize address: %v", err)
+	}
+
+	version, decodedHash, err := DeserializeAddress(address)
+	if err != nil {
+		t.Fatalf("Failed to deserialize address: %v", err)
+	}
+
+	if version != stacks.AddressVersionMainnetSingleSig {
+		t.Errorf("Expected version %d, got %d", stacks.AddressVersionMainnetSingleSig, version)
+	}
+
+	if string(decodedHash) != string(hash160) {
+		t.Errorf("Decoded hash160 does not match original")
 	}
 }
