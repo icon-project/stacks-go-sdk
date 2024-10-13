@@ -6,14 +6,14 @@ import (
 )
 
 type StacksNetwork struct {
-	coreAPIURL string
+	CoreAPIURL string
 	Version    TransactionVersion
 	ChainID    ChainID
 }
 
 func NewStacksMainnet() *StacksNetwork {
 	return &StacksNetwork{
-		coreAPIURL: "https://api.mainnet.hiro.so",
+		CoreAPIURL: "https://api.mainnet.hiro.so",
 		Version:    TransactionVersionMainnet,
 		ChainID:    ChainIDMainnet,
 	}
@@ -21,30 +21,30 @@ func NewStacksMainnet() *StacksNetwork {
 
 func NewStacksTestnet() *StacksNetwork {
 	return &StacksNetwork{
-		coreAPIURL: "https://api.testnet.hiro.so",
+		CoreAPIURL: "https://api.testnet.hiro.so",
 		Version:    TransactionVersionTestnet,
 		ChainID:    ChainIDTestnet,
 	}
 }
 
 func (n *StacksNetwork) GetAccountAPIURL(address string) string {
-	return fmt.Sprintf("%s/v2/accounts/%s?proof=0", n.coreAPIURL, address)
+	return fmt.Sprintf("%s/v2/accounts/%s?proof=0", n.CoreAPIURL, address)
 }
 
 func (n *StacksNetwork) GetBroadcastAPIURL() string {
-	return fmt.Sprintf("%s/v2/transactions", n.coreAPIURL)
+	return fmt.Sprintf("%s/v2/transactions", n.CoreAPIURL)
 }
 
 func (n *StacksNetwork) GetTransferFeeEstimateAPIURL() string {
-	return fmt.Sprintf("%s/v2/fees/transfer", n.coreAPIURL)
+	return fmt.Sprintf("%s/v2/fees/transfer", n.CoreAPIURL)
 }
 
 func (n *StacksNetwork) GetTransactionFeeEstimateAPIURL() string {
-	return fmt.Sprintf("%s/v2/fees/transaction", n.coreAPIURL)
+	return fmt.Sprintf("%s/v2/fees/transaction", n.CoreAPIURL)
 }
 
 func (n *StacksNetwork) GetNonceAPIURL(address string) string {
-	return fmt.Sprintf("%s/extended/v1/address/%s/nonces", n.coreAPIURL, address)
+	return fmt.Sprintf("%s/extended/v1/address/%s/nonces", n.CoreAPIURL, address)
 }
 
 func (n *StacksNetwork) FetchFn(url string) (*http.Response, error) {
