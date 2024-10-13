@@ -53,10 +53,12 @@ type ClarityTypeDescriptor struct {
 	StringASCII    *StringASCIIDescriptor `json:"string-ascii,omitempty"`
 	StringUTF8     *StringUTF8Descriptor  `json:"string-utf8,omitempty"`
 	Uint128        *struct{}              `json:"uint128,omitempty"`
+	Int128         *struct{}              `json:"int128,omitempty"`
 	Bool           *struct{}              `json:"bool,omitempty"`
 	Buffer         *BufferDescriptor      `json:"buffer,omitempty"`
 	Optional       *OptionalDescriptor    `json:"optional,omitempty"`
 	List           *ListDescriptor        `json:"list,omitempty"`
+	Tuple          *TupleDescriptor       `json:"tuple,omitempty"`
 	Response       *ResponseDescriptor    `json:"response,omitempty"`
 	Principal      *struct{}              `json:"principal,omitempty"`
 	TraitReference *struct{}              `json:"trait_reference,omitempty"`
@@ -82,6 +84,15 @@ type OptionalDescriptor struct {
 type ListDescriptor struct {
 	Type   ClarityTypeDescriptor `json:"type"`
 	Length int                   `json:"length"`
+}
+
+type TupleDescriptor struct {
+	Fields []TupleField `json:"tuple"`
+}
+
+type TupleField struct {
+	Name string                `json:"name"`
+	Type ClarityTypeDescriptor `json:"type"`
 }
 
 type TraitReferenceDescriptor struct {
@@ -121,6 +132,8 @@ func (c *ClarityTypeDescriptor) UnmarshalJSON(data []byte) error {
 		switch typeStr {
 		case "uint128":
 			c.Uint128 = &struct{}{}
+		case "int128":
+			c.Int128 = &struct{}{}
 		case "bool":
 			c.Bool = &struct{}{}
 		case "principal":
@@ -156,6 +169,8 @@ func (c *ClarityTypeDescriptor) UnmarshalJSON(data []byte) error {
 			c.StringUTF8 = &desc
 		case "uint128":
 			c.Uint128 = &struct{}{}
+		case "int128":
+			c.Int128 = &struct{}{}
 		case "bool":
 			c.Bool = &struct{}{}
 		case "buffer":
@@ -176,6 +191,12 @@ func (c *ClarityTypeDescriptor) UnmarshalJSON(data []byte) error {
 				return fmt.Errorf("failed to unmarshal list: %v", err)
 			}
 			c.List = &desc
+		case "tuple":
+			var desc TupleDescriptor
+			if err := json.Unmarshal(data, &desc); err != nil {
+				return fmt.Errorf("failed to unmarshal tuple: %v", err)
+			}
+			c.Tuple = &desc
 		case "response":
 			var desc ResponseDescriptor
 			if err := json.Unmarshal(value, &desc); err != nil {
@@ -202,6 +223,12 @@ func ClarityTypeToClarityValue(descriptor ClarityTypeDescriptor, value interface
 			return nil, fmt.Errorf("expected string for uint128 value")
 		}
 		return clarity.NewUInt(valStr)
+	case descriptor.Int128 != nil:
+		valStr, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("expected string for int128 value")
+		}
+		return clarity.NewInt(valStr)
 	case descriptor.Bool != nil:
 		valBool, ok := value.(bool)
 		if !ok {
@@ -253,6 +280,24 @@ func ClarityTypeToClarityValue(descriptor ClarityTypeDescriptor, value interface
 			clarityList = append(clarityList, clarityVal)
 		}
 		return clarity.NewList(clarityList), nil
+	case descriptor.Tuple != nil:
+		tupleMap, ok := value.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("expected map for tuple value")
+		}
+		fields := make(map[string]clarity.ClarityValue)
+		for _, field := range descriptor.Tuple.Fields {
+			fieldValue, exists := tupleMap[field.Name]
+			if !exists {
+				return nil, fmt.Errorf("missing field '%s' in tuple", field.Name)
+			}
+			clarityFieldValue, err := ClarityTypeToClarityValue(field.Type, fieldValue)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create tuple field '%s': %v", field.Name, err)
+			}
+			fields[field.Name] = clarityFieldValue
+		}
+		return clarity.NewTuple(fields), nil
 	case descriptor.Response != nil:
 		respMap, ok := value.(map[string]interface{})
 		if !ok {
