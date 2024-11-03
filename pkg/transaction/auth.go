@@ -30,6 +30,10 @@ func (t *TokenTransferTransaction) GetAuth() *TransactionAuth {
 	return &t.Auth
 }
 
+func (t *SmartContractTransaction) GetAuth() *TransactionAuth {
+	return &t.Auth
+}
+
 func (t *ContractCallTransaction) GetAuth() *TransactionAuth {
 	return &t.Auth
 }

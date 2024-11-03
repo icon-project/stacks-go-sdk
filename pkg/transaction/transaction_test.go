@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"bytes"
 	"encoding/hex"
 	"testing"
 
@@ -270,6 +271,129 @@ func TestContractCallTransactionSerializationAndDeserialization(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, isValid)
 
+	reserializedBytes, err := deserialized.Serialize()
+	assert.NoError(t, err)
+	assert.Equal(t, serialized, reserializedBytes)
+}
+
+func TestSmartContractTransactionInterfaces(t *testing.T) {
+	contractName := "test-contract"
+	codeBody := `(define-data-var counter int 0)`
+	transactionVersion := stacks.TransactionVersionTestnet
+	chainID := stacks.ChainIDTestnet
+	anchorMode := stacks.AnchorModeOnChainOnly
+	postConditionMode := stacks.PostConditionModeDeny
+
+	var signer [20]byte
+	copy(signer[:], bytes.Repeat([]byte{1}, 20))
+
+	tx, err := NewSmartContractTransaction(
+		contractName,
+		codeBody,
+		transactionVersion,
+		chainID,
+		signer,
+		0,
+		0,
+		anchorMode,
+		postConditionMode,
+	)
+	assert.NoError(t, err)
+
+	// Test GetAuth
+	auth := tx.GetAuth()
+	assert.NotNil(t, auth)
+	assert.Equal(t, stacks.AuthTypeStandard, auth.AuthType)
+	assert.Equal(t, signer, auth.OriginAuth.Signer)
+
+	// Test GetPayload
+	payload := tx.GetPayload()
+	assert.NotNil(t, payload)
+	contractPayload, ok := payload.(*SmartContractPayload)
+	assert.True(t, ok)
+	assert.Equal(t, contractName, contractPayload.ContractName)
+	assert.Equal(t, codeBody, contractPayload.CodeBody)
+
+	// Verify transaction implements StacksTransaction interface
+	var _ StacksTransaction = (*SmartContractTransaction)(nil)
+}
+
+func TestSmartContractTransactionSerializationAndDeserialization(t *testing.T) {
+	contractName := "test-contract"
+	codeBody := `(define-data-var counter int 0)
+(define-public (increment)
+    (ok (var-set counter (+ (var-get counter) 1))))
+`
+	transactionVersion := stacks.TransactionVersionTestnet
+	chainID := stacks.ChainIDTestnet
+	anchorMode := stacks.AnchorModeOnChainOnly
+	postConditionMode := stacks.PostConditionModeDeny
+
+	addressHashMode := stacks.AddressHashModeSerializeP2PKH
+	nonce := uint64(1)
+	fee := uint64(1000)
+
+	pubKey := "0332fc778e5beb5f944c75b2b63c21dd12c40bdcdf99ba0663168ae0b2be880aef"
+	pubKeyBytes, err := hex.DecodeString(pubKey)
+	assert.NoError(t, err)
+
+	secretKey := "c1d5bb638aa70862621667f9997711fce692cad782694103f8d9561f62e9f19701"
+	secretKeyBytes, err := hex.DecodeString(secretKey)
+	assert.NoError(t, err)
+
+	senderPublicKey := crypto.GetPublicKeyFromPrivate(secretKeyBytes)
+	var signer [20]byte
+	copy(signer[:], crypto.Hash160(senderPublicKey))
+
+	transaction, err := NewSmartContractTransaction(
+		contractName,
+		codeBody,
+		transactionVersion,
+		chainID,
+		signer,
+		nonce,
+		fee,
+		anchorMode,
+		postConditionMode,
+	)
+	assert.NoError(t, err)
+
+	err = SignTransaction(transaction, secretKeyBytes)
+	assert.NoError(t, err)
+
+	isValid, err := VerifyTransaction(transaction, pubKeyBytes)
+	assert.NoError(t, err)
+	assert.True(t, isValid)
+
+	serialized, err := transaction.Serialize()
+	assert.NoError(t, err)
+
+	deserialized, err := DeserializeTransaction(serialized)
+	assert.NoError(t, err)
+
+	contractTx, ok := deserialized.(*SmartContractTransaction)
+	assert.True(t, ok, "Deserialized transaction is not a SmartContractTransaction")
+
+	// Verify fields match
+	assert.Equal(t, transactionVersion, contractTx.Version)
+	assert.Equal(t, chainID, contractTx.ChainID)
+	assert.Equal(t, stacks.AuthTypeStandard, contractTx.Auth.AuthType)
+	assert.Equal(t, addressHashMode, contractTx.Auth.OriginAuth.HashMode)
+	assert.Equal(t, nonce, contractTx.Auth.OriginAuth.Nonce)
+	assert.Equal(t, fee, contractTx.Auth.OriginAuth.Fee)
+	assert.Equal(t, anchorMode, contractTx.AnchorMode)
+	assert.Equal(t, postConditionMode, contractTx.PostConditionMode)
+	assert.Empty(t, contractTx.PostConditions)
+
+	assert.Equal(t, contractName, contractTx.Payload.ContractName)
+	assert.Equal(t, codeBody, contractTx.Payload.CodeBody)
+
+	// Verify signature is still valid
+	isValid, err = VerifyTransaction(contractTx, pubKeyBytes)
+	assert.NoError(t, err)
+	assert.True(t, isValid)
+
+	// Verify re-serialization matches
 	reserializedBytes, err := deserialized.Serialize()
 	assert.NoError(t, err)
 	assert.Equal(t, serialized, reserializedBytes)

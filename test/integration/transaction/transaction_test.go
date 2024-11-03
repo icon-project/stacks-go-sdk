@@ -87,3 +87,60 @@ func TestBroadcastContractCallTransaction(t *testing.T) {
 
 	fmt.Printf("Transaction broadcasted successfully. TxID: %s\n", txID)
 }
+
+func TestBroadcastContractDeployTransaction(t *testing.T) {
+	mnemonic := "vapor unhappy gather snap project ball gain puzzle comic error avocado bounce letter anxiety wheel provide canyon promote sniff improve figure daughter mansion baby"
+	privateKey, err := crypto.DeriveStxPrivateKey(mnemonic, 0)
+	if err != nil {
+		t.Fatalf("Failed to derive private key: %v", err)
+	}
+
+	senderAddress := "ST15C893XJFJ6FSKM020P9JQDB5T7X6MQTXMBPAVH"
+	senderPublicKey := crypto.GetPublicKeyFromPrivate(privateKey)
+	var signerArray [20]byte
+	copy(signerArray[:], crypto.Hash160(senderPublicKey))
+
+	// Define the contract name and Clarity code
+	contractName := "my-counter"
+	codeBody := `(define-data-var counter int 0)
+
+(define-public (increment)
+    (begin
+        (var-set counter (+ (var-get counter) 1))
+        (ok (var-get counter))))
+
+(define-public (decrement)
+    (begin
+        (var-set counter (- (var-get counter) 1))
+        (ok (var-get counter))))
+
+(define-read-only (get-counter)
+    (ok (var-get counter)))`
+
+	network := stacks.NewStacksTestnet()
+	tx, err := transaction.MakeContractDeploy(
+		contractName,
+		codeBody,
+		*network,
+		senderAddress,
+		privateKey,
+		nil, // Auto-estimate fee
+		nil, // Auto-estimate nonce
+	)
+	if err != nil {
+		t.Fatalf("Failed to create contract deploy transaction: %v", err)
+	}
+
+	err = transaction.SignTransaction(tx, privateKey)
+	if err != nil {
+		t.Fatalf("Failed to sign transaction: %v", err)
+	}
+
+	txID, err := transaction.BroadcastTransaction(tx, network)
+	if err != nil {
+		t.Fatalf("Failed to broadcast transaction: %v", err)
+	}
+
+	fmt.Printf("Contract deploy transaction broadcasted successfully. TxID: %s\n", txID)
+	fmt.Printf("Contract will be deployed as: %s.%s\n", senderAddress, contractName)
+}
