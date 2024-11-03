@@ -221,6 +221,44 @@ func MakeSTXTokenTransfer(
 	return tx, nil
 }
 
+func MakeContractDeploy(
+	contractName string,
+	codeBody string,
+	network stacks.StacksNetwork,
+	senderAddress string,
+	senderKey []byte,
+	fee *big.Int,
+	nonce *big.Int,
+) (*SmartContractTransaction, error) {
+	if contractName == "" || codeBody == "" || len(senderKey) == 0 {
+		return nil, &CustomError{Message: "Invalid parameters: contractName, codeBody, or senderKey are empty"}
+	}
+
+	signer := deriveSigner(senderKey)
+
+	tx, err := NewSmartContractTransaction(
+		contractName,
+		codeBody,
+		network.Version,
+		network.ChainID,
+		signer,
+		0,
+		0,
+		stacks.AnchorModeOnChainOnly,
+		stacks.PostConditionModeDeny,
+	)
+	if err != nil {
+		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
+	}
+
+	err = createAndSignTransaction(tx, network, senderAddress, senderKey, fee, nonce)
+	if err != nil {
+		return nil, err
+	}
+
+	return tx, nil
+}
+
 func MakeContractCall(
 	contractAddress string,
 	contractName string,

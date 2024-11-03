@@ -11,6 +11,7 @@ type PayloadType byte
 
 const (
 	PayloadTypeTokenTransfer PayloadType = 0x00
+	PayloadTypeSmartContract PayloadType = 0x01
 	PayloadTypeContractCall  PayloadType = 0x02
 )
 
