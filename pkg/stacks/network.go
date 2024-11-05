@@ -27,6 +27,22 @@ func NewStacksTestnet() *StacksNetwork {
 	}
 }
 
+func NewStacksLocalnet() *StacksNetwork {
+	return &StacksNetwork{
+		CoreAPIURL: "http://localhost:3999", // Default Stacks local node API port
+		Version:    TransactionVersionTestnet,
+		ChainID:    ChainIDTestnet,
+	}
+}
+
+func NewStacksCustomNetwork(coreAPIURL string, version TransactionVersion, chainID ChainID) *StacksNetwork {
+	return &StacksNetwork{
+		CoreAPIURL: coreAPIURL,
+		Version:    version,
+		ChainID:    chainID,
+	}
+}
+
 func (n *StacksNetwork) GetAccountAPIURL(address string) string {
 	return fmt.Sprintf("%s/v2/accounts/%s?proof=0", n.CoreAPIURL, address)
 }
