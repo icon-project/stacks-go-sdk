@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**GetBlockByHeight**](BlocksAPI.md#GetBlockByHeight) | **Get** /extended/v1/block/by_height/{height} | Get block by height
 [**GetBlockList**](BlocksAPI.md#GetBlockList) | **Get** /extended/v1/block/ | Get recent blocks
 [**GetBlocks**](BlocksAPI.md#GetBlocks) | **Get** /extended/v2/blocks/ | Get blocks
+[**GetSignerSignaturesForBlock**](BlocksAPI.md#GetSignerSignaturesForBlock) | **Get** /extended/v2/blocks/{height_or_hash}/signer-signatures | Get signer signatures for block
 
 
 
@@ -549,6 +550,80 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**GetBlocks200Response**](GetBlocks200Response.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetSignerSignaturesForBlock
+
+> GetSignerSignaturesForBlock200Response GetSignerSignaturesForBlock(ctx, heightOrHash).Limit(limit).Offset(offset).Execute()
+
+Get signer signatures for block
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	heightOrHash := *openapiclient.NewGetBlockHeightOrHashParameter() // GetBlockHeightOrHashParameter | 
+	limit := int32(56) // int32 | Results per page (optional) (default to 500)
+	offset := int32(56) // int32 | Result offset (optional) (default to 0)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.BlocksAPI.GetSignerSignaturesForBlock(context.Background(), heightOrHash).Limit(limit).Offset(offset).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BlocksAPI.GetSignerSignaturesForBlock``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetSignerSignaturesForBlock`: GetSignerSignaturesForBlock200Response
+	fmt.Fprintf(os.Stdout, "Response from `BlocksAPI.GetSignerSignaturesForBlock`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**heightOrHash** | [**GetBlockHeightOrHashParameter**](.md) |  | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetSignerSignaturesForBlockRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **limit** | **int32** | Results per page | [default to 500]
+ **offset** | **int32** | Result offset | [default to 0]
+
+### Return type
+
+[**GetSignerSignaturesForBlock200Response**](GetSignerSignaturesForBlock200Response.md)
 
 ### Authorization
 

@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **Hash** | **string** | Hash representing the block | 
 **BlockTime** | **int32** | Unix timestamp (in seconds) indicating when this block was mined. | 
 **BlockTimeIso** | **string** | An ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ) indicating when this block was mined. | 
+**TenureHeight** | **int32** | The tenure height (AKA coinbase height) of this block | 
 **IndexBlockHash** | **string** | The only hash that can uniquely identify an anchored block or an unconfirmed state trie | 
 **ParentBlockHash** | **string** | Hash of the parent block | 
 **ParentIndexBlockHash** | **string** | Index block hash of the parent block | 
@@ -28,7 +29,7 @@ Name | Type | Description | Notes
 
 ### NewGetBlocks200ResponseResultsInner
 
-`func NewGetBlocks200ResponseResultsInner(canonical bool, height int32, hash string, blockTime int32, blockTimeIso string, indexBlockHash string, parentBlockHash string, parentIndexBlockHash string, burnBlockTime int32, burnBlockTimeIso string, burnBlockHash string, burnBlockHeight int32, minerTxid string, txCount int32, executionCostReadCount int32, executionCostReadLength int32, executionCostRuntime int32, executionCostWriteCount int32, executionCostWriteLength int32, ) *GetBlocks200ResponseResultsInner`
+`func NewGetBlocks200ResponseResultsInner(canonical bool, height int32, hash string, blockTime int32, blockTimeIso string, tenureHeight int32, indexBlockHash string, parentBlockHash string, parentIndexBlockHash string, burnBlockTime int32, burnBlockTimeIso string, burnBlockHash string, burnBlockHeight int32, minerTxid string, txCount int32, executionCostReadCount int32, executionCostReadLength int32, executionCostRuntime int32, executionCostWriteCount int32, executionCostWriteLength int32, ) *GetBlocks200ResponseResultsInner`
 
 NewGetBlocks200ResponseResultsInner instantiates a new GetBlocks200ResponseResultsInner object
 This constructor will assign default values to properties that have it defined,
@@ -141,6 +142,26 @@ and a boolean to check if the value has been set.
 `func (o *GetBlocks200ResponseResultsInner) SetBlockTimeIso(v string)`
 
 SetBlockTimeIso sets BlockTimeIso field to given value.
+
+
+### GetTenureHeight
+
+`func (o *GetBlocks200ResponseResultsInner) GetTenureHeight() int32`
+
+GetTenureHeight returns the TenureHeight field if non-nil, zero value otherwise.
+
+### GetTenureHeightOk
+
+`func (o *GetBlocks200ResponseResultsInner) GetTenureHeightOk() (*int32, bool)`
+
+GetTenureHeightOk returns a tuple with the TenureHeight field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTenureHeight
+
+`func (o *GetBlocks200ResponseResultsInner) SetTenureHeight(v int32)`
+
+SetTenureHeight sets TenureHeight field to given value.
 
 
 ### GetIndexBlockHash

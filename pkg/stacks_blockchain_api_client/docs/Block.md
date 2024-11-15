@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **Hash** | **string** | Hash representing the block | 
 **BlockTime** | **float32** | Unix timestamp (in seconds) indicating when this block was mined. | 
 **BlockTimeIso** | **string** | An ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ) indicating when this block was mined. | 
+**TenureHeight** | **int32** | The tenure height (AKA coinbase height) of this block | 
 **IndexBlockHash** | **string** | The only hash that can uniquely identify an anchored block or an unconfirmed state trie | 
 **ParentBlockHash** | **string** | Hash of the parent block | 
 **BurnBlockTime** | **float32** | Unix timestamp (in seconds) indicating when this block was mined. | 
@@ -32,7 +33,7 @@ Name | Type | Description | Notes
 
 ### NewBlock
 
-`func NewBlock(canonical bool, height int32, hash string, blockTime float32, blockTimeIso string, indexBlockHash string, parentBlockHash string, burnBlockTime float32, burnBlockTimeIso string, burnBlockHash string, burnBlockHeight int32, minerTxid string, executionCostReadCount int32, executionCostReadLength int32, executionCostRuntime int32, executionCostWriteCount int32, executionCostWriteLength int32, txs []string, parentMicroblockHash string, parentMicroblockSequence int32, microblocksAccepted []string, microblocksStreamed []string, microblockTxCount map[string]int32, ) *Block`
+`func NewBlock(canonical bool, height int32, hash string, blockTime float32, blockTimeIso string, tenureHeight int32, indexBlockHash string, parentBlockHash string, burnBlockTime float32, burnBlockTimeIso string, burnBlockHash string, burnBlockHeight int32, minerTxid string, executionCostReadCount int32, executionCostReadLength int32, executionCostRuntime int32, executionCostWriteCount int32, executionCostWriteLength int32, txs []string, parentMicroblockHash string, parentMicroblockSequence int32, microblocksAccepted []string, microblocksStreamed []string, microblockTxCount map[string]int32, ) *Block`
 
 NewBlock instantiates a new Block object
 This constructor will assign default values to properties that have it defined,
@@ -145,6 +146,26 @@ and a boolean to check if the value has been set.
 `func (o *Block) SetBlockTimeIso(v string)`
 
 SetBlockTimeIso sets BlockTimeIso field to given value.
+
+
+### GetTenureHeight
+
+`func (o *Block) GetTenureHeight() int32`
+
+GetTenureHeight returns the TenureHeight field if non-nil, zero value otherwise.
+
+### GetTenureHeightOk
+
+`func (o *Block) GetTenureHeightOk() (*int32, bool)`
+
+GetTenureHeightOk returns a tuple with the TenureHeight field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTenureHeight
+
+`func (o *Block) SetTenureHeight(v int32)`
+
+SetTenureHeight sets TenureHeight field to given value.
 
 
 ### GetIndexBlockHash

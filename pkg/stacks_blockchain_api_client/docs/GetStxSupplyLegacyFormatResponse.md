@@ -5,8 +5,10 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **UnlockedPercent** | **string** | String quoted decimal number of the percentage of STX that have unlocked | 
-**TotalStacks** | **string** | String quoted decimal number of the total possible number of STX | 
+**TotalStacks** | **string** | String quoted decimal number of the total circulating number of STX (at the input block height if provided, otherwise the current block height) | 
 **TotalStacksFormatted** | **string** | Same as &#x60;totalStacks&#x60; but formatted with comma thousands separators | 
+**TotalStacksYear2050** | **string** | String quoted decimal number of total circulating STX supply in year 2050. STX supply grows approx 0.3% annually thereafter in perpetuity. | 
+**TotalStacksYear2050Formatted** | **string** | Same as &#x60;totalStacksYear2050&#x60; but formatted with comma thousands separators | 
 **UnlockedSupply** | **string** | String quoted decimal number of the STX that have been mined or unlocked | 
 **UnlockedSupplyFormatted** | **string** | Same as &#x60;unlockedSupply&#x60; but formatted with comma thousands separators | 
 **BlockHeight** | **string** | The block height at which this information was queried | 
@@ -15,7 +17,7 @@ Name | Type | Description | Notes
 
 ### NewGetStxSupplyLegacyFormatResponse
 
-`func NewGetStxSupplyLegacyFormatResponse(unlockedPercent string, totalStacks string, totalStacksFormatted string, unlockedSupply string, unlockedSupplyFormatted string, blockHeight string, ) *GetStxSupplyLegacyFormatResponse`
+`func NewGetStxSupplyLegacyFormatResponse(unlockedPercent string, totalStacks string, totalStacksFormatted string, totalStacksYear2050 string, totalStacksYear2050Formatted string, unlockedSupply string, unlockedSupplyFormatted string, blockHeight string, ) *GetStxSupplyLegacyFormatResponse`
 
 NewGetStxSupplyLegacyFormatResponse instantiates a new GetStxSupplyLegacyFormatResponse object
 This constructor will assign default values to properties that have it defined,
@@ -88,6 +90,46 @@ and a boolean to check if the value has been set.
 `func (o *GetStxSupplyLegacyFormatResponse) SetTotalStacksFormatted(v string)`
 
 SetTotalStacksFormatted sets TotalStacksFormatted field to given value.
+
+
+### GetTotalStacksYear2050
+
+`func (o *GetStxSupplyLegacyFormatResponse) GetTotalStacksYear2050() string`
+
+GetTotalStacksYear2050 returns the TotalStacksYear2050 field if non-nil, zero value otherwise.
+
+### GetTotalStacksYear2050Ok
+
+`func (o *GetStxSupplyLegacyFormatResponse) GetTotalStacksYear2050Ok() (*string, bool)`
+
+GetTotalStacksYear2050Ok returns a tuple with the TotalStacksYear2050 field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTotalStacksYear2050
+
+`func (o *GetStxSupplyLegacyFormatResponse) SetTotalStacksYear2050(v string)`
+
+SetTotalStacksYear2050 sets TotalStacksYear2050 field to given value.
+
+
+### GetTotalStacksYear2050Formatted
+
+`func (o *GetStxSupplyLegacyFormatResponse) GetTotalStacksYear2050Formatted() string`
+
+GetTotalStacksYear2050Formatted returns the TotalStacksYear2050Formatted field if non-nil, zero value otherwise.
+
+### GetTotalStacksYear2050FormattedOk
+
+`func (o *GetStxSupplyLegacyFormatResponse) GetTotalStacksYear2050FormattedOk() (*string, bool)`
+
+GetTotalStacksYear2050FormattedOk returns a tuple with the TotalStacksYear2050Formatted field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTotalStacksYear2050Formatted
+
+`func (o *GetStxSupplyLegacyFormatResponse) SetTotalStacksYear2050Formatted(v string)`
+
+SetTotalStacksYear2050Formatted sets TotalStacksYear2050Formatted field to given value.
 
 
 ### GetUnlockedSupply

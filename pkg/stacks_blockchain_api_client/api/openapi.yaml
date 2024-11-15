@@ -5,7 +5,7 @@ info:
 
           [Download Postman collection](https://hirosystems.github.io/stacks-blockchain-api/collection.json)
   title: Stacks Blockchain API
-  version: v7.14.1
+  version: v8.1.2
 externalDocs:
   description: Source Repository
   url: https://github.com/hirosystems/stacks-blockchain-api
@@ -85,6 +85,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Api_Status_Response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: API status
       tags:
@@ -224,6 +230,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_transaction_list_200_response'
           description: List of transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get recent transactions
       tags:
       - Transactions
@@ -286,6 +298,12 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/get_tx_list_details_200_response_value'
                 type: object
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get list of details for transactions
       tags:
@@ -387,6 +405,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_mempool_transaction_list_200_response'
           description: List of mempool transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get mempool transactions
       tags:
       - Transactions
@@ -431,6 +455,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_dropped_mempool_transaction_list_200_response'
           description: List of dropped mempool transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get dropped mempool transactions
       tags:
       - Transactions
@@ -447,6 +477,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/MempoolTransactionStatsResponse'
           description: GET request that returns stats on mempool transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get statistics for mempool transactions
       tags:
       - Transactions
@@ -514,6 +550,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/List_of_events'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Transaction Events
       tags:
       - Transactions
@@ -573,6 +615,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_transaction_by_id_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get transaction
       tags:
       - Transactions
@@ -622,6 +670,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetRawTransactionResult'
           description: GET raw transaction
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get raw transaction
       tags:
       - Transactions
@@ -671,6 +725,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_transaction_list_200_response'
           description: List of transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Transactions by block hash
       tags:
       - Transactions
@@ -724,14 +784,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_transaction_list_200_response'
           description: List of transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Transactions by block height
       tags:
       - Transactions
   /extended/v1/stx_supply/:
     get:
-      description: |-
-        Retrieves the total and unlocked STX supply. More information on Stacking can be found [here] (https://docs.stacks.co/understand-stacks/stacking).
-                **Note:** This uses the estimated future total supply for the year 2050.
+      description: "Retrieves the total and unlocked STX supply. More information\
+        \ on Stacking can be found [here] (https://docs.stacks.co/understand-stacks/stacking)."
       operationId: get_stx_supply
       parameters:
       - description: "Supply details are queried from specified block height. If the\
@@ -764,14 +829,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetStxSupplyResponse'
           description: GET request that returns network target block times
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get total and unlocked STX supply
       tags:
       - Info
   /extended/v1/stx_supply/total/plain:
     get:
-      description: |-
-        Retrieves the total supply for STX tokens as plain text.
-                **Note:** this uses the estimated future total supply for the year 2050.
+      deprecated: true
+      description: Retrieves the total circulating STX token supply as plain text.
       operationId: get_stx_supply_total_supply_plain
       responses:
         "200":
@@ -780,11 +850,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_stx_supply_total_supply_plain_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get total STX supply in plain text format
       tags:
       - Info
   /extended/v1/stx_supply/circulating/plain:
     get:
+      deprecated: true
       description: Retrieves the STX tokens currently in circulation that have been
         unlocked as plain text.
       operationId: get_stx_supply_circulating_plain
@@ -795,14 +872,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_stx_supply_total_supply_plain_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get circulating STX supply in plain text format
       tags:
       - Info
   /extended/v1/stx_supply/legacy_format:
     get:
-      description: |-
-        Retrieves total supply of STX tokens including those currently in circulation that have been unlocked.
-                **Note:** this uses the estimated future total supply for the year 2050.
+      deprecated: true
+      description: Retrieves total supply of STX tokens including those currently
+        in circulation that have been unlocked.
       operationId: get_total_stx_supply_legacy_format
       parameters:
       - description: "Supply details are queried from specified block height. If the\
@@ -835,6 +918,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetStxSupplyLegacyFormatResponse'
           description: GET request that returns network target block times
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get total and unlocked STX supply (results formatted the same as the
         legacy 1.0 API)
       tags:
@@ -852,6 +941,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/NetworkBlockTimesResponse'
           description: GET request that returns network target block times
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get the network target block time
       tags:
       - Info
@@ -876,6 +971,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/NetworkBlockTimeResponse'
           description: GET request that target block time for a given network
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get a given network's target block time
       tags:
       - Info
@@ -956,6 +1057,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_nft_holdings_200_response'
           description: List of Non-Fungible Token holdings
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Non-Fungible Token holdings
       tags:
       - Non-Fungible Tokens
@@ -1036,6 +1143,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_nft_history_200_response'
           description: List of Non-Fungible Token history events
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Non-Fungible Token history
       tags:
       - Non-Fungible Tokens
@@ -1107,6 +1220,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/NonFungibleTokenMintList'
           description: List of Non-Fungible Token mint events for an asset identifier
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Non-Fungible Token mints
       tags:
       - Non-Fungible Tokens
@@ -1159,6 +1278,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_ft_holders_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Fungible token holders
       tags:
       - Fungible Tokens
@@ -1207,6 +1332,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContractListResponse'
           description: GET list of contracts
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get contracts by trait
       tags:
       - Smart Contracts
@@ -1231,6 +1362,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmartContract'
           description: A Smart Contract Detail
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get contract info
       tags:
       - Smart Contracts
@@ -1279,6 +1416,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_contract_events_by_id_200_response'
           description: List of events
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get contract events
       tags:
       - Smart Contracts
@@ -1304,6 +1447,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/FeeRate'
           description: Get fee rate information.
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Fetch fee rate
       tags:
       - Fees
@@ -1345,6 +1494,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/MicroblockListResponse'
           description: GET request that returns microblocks
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get recent microblocks
       tags:
       - Microblocks
@@ -1369,6 +1524,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Microblock'
           description: A microblock
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get microblock
       tags:
       - Microblocks
@@ -1383,6 +1544,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_unanchored_txs_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get the list of current transactions that belong to unanchored microblocks
       tags:
@@ -1428,6 +1595,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockListResponse'
           description: GET request that returns blocks
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get recent blocks
       tags:
       - Blocks
@@ -1457,6 +1630,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Block'
           description: A block
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get block by height
       tags:
       - Blocks
@@ -1486,6 +1665,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Block'
           description: A block
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get block by burnchain height
       tags:
       - Blocks
@@ -1514,6 +1699,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Block'
           description: A block
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get block by hash
       tags:
       - Blocks
@@ -1542,6 +1733,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Block'
           description: A block
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get block by burnchain block hash
       tags:
       - Blocks
@@ -1580,6 +1777,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/List_of_burnchain_reward_recipients_and_amounts'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get recent reward slot holders
       tags:
@@ -1632,6 +1835,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BurnchainRewardSlotHolderListResponse'
           description: List of burnchain reward recipients and amounts
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get recent reward slot holder entries for the given address
       tags:
       - Stacking Rewards
@@ -1671,6 +1880,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_burnchain_reward_list_200_response'
           description: List of burnchain reward recipients and amounts
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get recent burnchain reward recipients
       tags:
       - Stacking Rewards
@@ -1721,6 +1936,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_burnchain_reward_list_200_response'
           description: List of burnchain reward recipients and amounts
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get recent burnchain reward for the given recipient
       tags:
       - Stacking Rewards
@@ -1748,6 +1969,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BurnchainRewardsTotal'
           description: Total burnchain rewards made to a recipient
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get total burnchain rewards for the given recipient
       tags:
       - Stacking Rewards
@@ -1795,13 +2022,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressStxBalance'
           description: GET request that returns address balances
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get account STX balance
       tags:
       - Accounts
   /extended/v1/address/{principal}/balances:
     get:
       description: "Retrieves total account balance information for a given Address\
-        \ or Contract Identifier. This includes the balances of  STX Tokens, Fungible\
+        \ or Contract Identifier. This includes the balances of STX Tokens, Fungible\
         \ Tokens and Non-Fungible Tokens for the account."
       operationId: get_account_balance
       parameters:
@@ -1844,6 +2077,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressBalanceResponse'
           description: GET request that returns address balances
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get account balances
       tags:
       - Accounts
@@ -1928,6 +2167,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressTransactionsListResponse'
           description: GET request that returns account transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get account transactions
       tags:
       - Accounts
@@ -1963,6 +2208,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressTransactionWithTransfers'
           description: Transaction with STX transfers for a given address
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get account transaction information for specific transaction
       tags:
       - Accounts
@@ -2043,6 +2294,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressTransactionsWithTransfersListResponse'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get account transactions including STX transfers for each transaction.
       tags:
       - Accounts
@@ -2113,6 +2370,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AddressAssetsListResponse'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get account assets
       tags:
@@ -2194,6 +2457,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressStxInboundListResponse'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get inbound STX transfers
       tags:
       - Accounts
@@ -2250,6 +2519,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_mempool_transaction_list_200_response'
           description: List of mempool transactions
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Transactions for address
       tags:
       - Transactions
@@ -2294,6 +2569,12 @@ paths:
                 $ref: '#/components/schemas/AddressNonces'
           description: "The latest nonce values used by an account by inspecting the\
             \ mempool, microblock transactions, and anchored transactions"
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get the latest nonce used by an account
       tags:
       - Accounts
@@ -2333,6 +2614,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/search_by_id_404_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Search
       tags:
@@ -2501,6 +2788,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_pool_delegations_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Stacking pool members
       tags:
@@ -2678,6 +2971,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_blocks_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get blocks
       tags:
       - Blocks
@@ -2691,6 +2990,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_average_block_times_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get average block times
       tags:
@@ -2713,6 +3018,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_blocks_200_response_results_inner'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get block
       tags:
@@ -2759,9 +3070,67 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_transactions_by_block_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get transactions by block
       tags:
       - Transactions
+  /extended/v2/blocks/{height_or_hash}/signer-signatures:
+    get:
+      description: Retrieves the signer signatures (an array of signature byte strings)
+        in a single block
+      operationId: get_signer_signatures_for_block
+      parameters:
+      - description: Results per page
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 500
+          maximum: 1000
+          minimum: 0
+          title: Limit
+          type: integer
+        style: form
+      - description: Result offset
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Offset
+          type: integer
+        style: form
+      - explode: false
+        in: path
+        name: height_or_hash
+        required: true
+        schema:
+          $ref: '#/components/schemas/get_block_height_or_hash_parameter'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_signer_signatures_for_block_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
+      summary: Get signer signatures for block
+      tags:
+      - Blocks
   /extended/v2/burn-blocks/:
     get:
       description: Retrieves a list of recent burn blocks
@@ -2797,6 +3166,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_burn_blocks_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get burn blocks
       tags:
       - Burn Blocks
@@ -2818,6 +3193,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_burn_blocks_200_response_results_inner'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get burn block
       tags:
@@ -2864,6 +3245,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_blocks_by_burn_block_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get blocks by burn block
       tags:
       - Burn Blocks
@@ -2888,6 +3275,12 @@ paths:
                   $ref: '#/components/schemas/get_smart_contracts_status_200_response_value'
                 type: object
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get smart contracts status
       tags:
       - Smart Contracts
@@ -2903,6 +3296,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_mempool_fee_priorities_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get mempool transaction fee priorities
       tags:
@@ -2942,6 +3341,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_pox_cycles_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get PoX cycles
       tags:
       - Proof of Transfer
@@ -2964,6 +3369,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_pox_cycles_200_response_results_inner'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get PoX cycle
       tags:
@@ -3011,6 +3422,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_pox_cycle_signers_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get signers in PoX cycle
       tags:
       - Proof of Transfer
@@ -3042,6 +3459,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_pox_cycle_signers_200_response_results_inner'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get signer in PoX cycle
       tags:
@@ -3098,6 +3521,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/get_pox_cycle_signer_stackers_200_response'
           description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get stackers for signer in PoX cycle
       tags:
       - Proof of Transfer
@@ -3146,6 +3575,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_address_transactions_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get address transactions
       tags:
@@ -3203,6 +3638,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_address_transaction_events_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get events for an address transaction
       tags:
@@ -3299,6 +3740,12 @@ paths:
                 title: GetAllSubdomainsInName
                 type: array
           description: Fetch a list of subdomains in a name.
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get Name Subdomains
       tags:
       - Names
@@ -3451,6 +3898,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BnsGetNameInfoResponse'
           description: Get name details
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get Name Details
       tags:
       - Names
@@ -3475,6 +3928,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_all_namespaces_200_response'
+          description: Default Response
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
           description: Default Response
       summary: Get All Namespaces
       tags:
@@ -3531,6 +3990,12 @@ paths:
                 title: BnsGetAllNamespacesNamesResponse
                 type: array
           description: Fetch a list of names from the namespace.
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get Namespace Names
       tags:
       - Names
@@ -3574,6 +4039,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BnsNamesOwnByAddressResponse'
           description: Retrieves a list of names owned by the address provided.
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get Names Owned by Address
       tags:
       - Names
@@ -3605,6 +4076,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BnsError'
           description: Error
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get Namespace Price
       tags:
       - Names
@@ -3636,6 +4113,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/BnsError'
           description: Error
+        "4XX":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_Response'
+          description: Default Response
       summary: Get Name Price
       tags:
       - Names
@@ -3711,6 +4194,20 @@ components:
       - server_version
       - status
       title: Api Status Response
+      type: object
+    Error_Response:
+      additionalProperties: true
+      example:
+        error: error
+        message: message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+      - error
+      title: Error Response
       type: object
     get_transaction_list_type_parameter_inner:
       anyOf:
@@ -8237,14 +8734,20 @@ components:
         total_stx: total_stx
         unlocked_stx: unlocked_stx
         block_height: 0
+        total_stx_year_2050: total_stx_year_2050
       properties:
         unlocked_percent:
           description: String quoted decimal number of the percentage of STX that
             have unlocked
           type: string
         total_stx:
-          description: String quoted decimal number of the total possible number of
-            STX
+          description: "String quoted decimal number of the total circulating number\
+            \ of STX (at the input block height if provided, otherwise the current\
+            \ block height)"
+          type: string
+        total_stx_year_2050:
+          description: String quoted decimal number of total circulating STX supply
+            in year 2050. STX supply grows approx 0.3% annually thereafter in perpetuity.
           type: string
         unlocked_stx:
           description: String quoted decimal number of the STX that have been mined
@@ -8256,6 +8759,7 @@ components:
       required:
       - block_height
       - total_stx
+      - total_stx_year_2050
       - unlocked_percent
       - unlocked_stx
       title: GetStxSupplyResponse
@@ -8269,10 +8773,12 @@ components:
     GetStxSupplyLegacyFormatResponse:
       description: GET request that returns network target block times
       example:
+        totalStacksYear2050Formatted: totalStacksYear2050Formatted
         unlockedSupply: unlockedSupply
         unlockedSupplyFormatted: unlockedSupplyFormatted
         blockHeight: blockHeight
         unlockedPercent: unlockedPercent
+        totalStacksYear2050: totalStacksYear2050
         totalStacksFormatted: totalStacksFormatted
         totalStacks: totalStacks
       properties:
@@ -8281,11 +8787,20 @@ components:
             have unlocked
           type: string
         totalStacks:
-          description: String quoted decimal number of the total possible number of
-            STX
+          description: "String quoted decimal number of the total circulating number\
+            \ of STX (at the input block height if provided, otherwise the current\
+            \ block height)"
           type: string
         totalStacksFormatted:
           description: Same as `totalStacks` but formatted with comma thousands separators
+          type: string
+        totalStacksYear2050:
+          description: String quoted decimal number of total circulating STX supply
+            in year 2050. STX supply grows approx 0.3% annually thereafter in perpetuity.
+          type: string
+        totalStacksYear2050Formatted:
+          description: Same as `totalStacksYear2050` but formatted with comma thousands
+            separators
           type: string
         unlockedSupply:
           description: String quoted decimal number of the STX that have been mined
@@ -8302,6 +8817,8 @@ components:
       - blockHeight
       - totalStacks
       - totalStacksFormatted
+      - totalStacksYear2050
+      - totalStacksYear2050Formatted
       - unlockedPercent
       - unlockedSupply
       - unlockedSupplyFormatted
@@ -9128,10 +9645,10 @@ components:
     Block:
       description: A block
       example:
-        execution_cost_write_count: 9
+        execution_cost_write_count: 3
         burn_block_time_iso: burn_block_time_iso
         burn_block_hash: burn_block_hash
-        execution_cost_read_length: 2
+        execution_cost_read_length: 7
         parent_microblock_hash: parent_microblock_hash
         parent_block_hash: parent_block_hash
         canonical: true
@@ -9147,15 +9664,16 @@ components:
         microblocks_streamed:
         - microblocks_streamed
         - microblocks_streamed
-        parent_microblock_sequence: 2
-        execution_cost_runtime: 7
+        parent_microblock_sequence: 4
+        execution_cost_runtime: 9
         block_time_iso: block_time_iso
         microblock_tx_count:
-          key: 4
-        execution_cost_read_count: 5
-        burn_block_time: 1.4658129805029452
+          key: 7
+        execution_cost_read_count: 2
+        tenure_height: 1
+        burn_block_time: 5.962133916683182
         miner_txid: miner_txid
-        execution_cost_write_length: 3
+        execution_cost_write_length: 2
         hash: hash
         height: 0
       properties:
@@ -9176,6 +9694,9 @@ components:
           description: An ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ) indicating when this
             block was mined.
           type: string
+        tenure_height:
+          description: The tenure height (AKA coinbase height) of this block
+          type: integer
         index_block_hash:
           description: The only hash that can uniquely identify an anchored block
             or an unconfirmed state trie
@@ -9281,6 +9802,7 @@ components:
       - parent_block_hash
       - parent_microblock_hash
       - parent_microblock_sequence
+      - tenure_height
       - txs
       title: Block
       type: object
@@ -9291,10 +9813,10 @@ components:
         offset: 0
         limit: 20
         results:
-        - execution_cost_write_count: 9
+        - execution_cost_write_count: 3
           burn_block_time_iso: burn_block_time_iso
           burn_block_hash: burn_block_hash
-          execution_cost_read_length: 2
+          execution_cost_read_length: 7
           parent_microblock_hash: parent_microblock_hash
           parent_block_hash: parent_block_hash
           canonical: true
@@ -9310,21 +9832,22 @@ components:
           microblocks_streamed:
           - microblocks_streamed
           - microblocks_streamed
-          parent_microblock_sequence: 2
-          execution_cost_runtime: 7
+          parent_microblock_sequence: 4
+          execution_cost_runtime: 9
           block_time_iso: block_time_iso
           microblock_tx_count:
-            key: 4
-          execution_cost_read_count: 5
-          burn_block_time: 1.4658129805029452
+            key: 7
+          execution_cost_read_count: 2
+          tenure_height: 1
+          burn_block_time: 5.962133916683182
           miner_txid: miner_txid
-          execution_cost_write_length: 3
+          execution_cost_write_length: 2
           hash: hash
           height: 0
-        - execution_cost_write_count: 9
+        - execution_cost_write_count: 3
           burn_block_time_iso: burn_block_time_iso
           burn_block_hash: burn_block_hash
-          execution_cost_read_length: 2
+          execution_cost_read_length: 7
           parent_microblock_hash: parent_microblock_hash
           parent_block_hash: parent_block_hash
           canonical: true
@@ -9340,15 +9863,16 @@ components:
           microblocks_streamed:
           - microblocks_streamed
           - microblocks_streamed
-          parent_microblock_sequence: 2
-          execution_cost_runtime: 7
+          parent_microblock_sequence: 4
+          execution_cost_runtime: 9
           block_time_iso: block_time_iso
           microblock_tx_count:
-            key: 4
-          execution_cost_read_count: 5
-          burn_block_time: 1.4658129805029452
+            key: 7
+          execution_cost_read_count: 2
+          tenure_height: 1
+          burn_block_time: 5.962133916683182
           miner_txid: miner_txid
-          execution_cost_write_length: 3
+          execution_cost_write_length: 2
           hash: hash
           height: 0
       properties:
@@ -9630,6 +10154,9 @@ components:
       - properties:
           balance:
             type: string
+          estimated_balance:
+            description: Total STX balance considering pending mempool transactions
+            type: string
           total_sent:
             type: string
           total_received:
@@ -9694,6 +10221,7 @@ components:
         locked: locked
         burnchain_unlock_height: 1
         total_received: total_received
+        estimated_balance: estimated_balance
         total_miner_rewards_received: total_miner_rewards_received
       title: AddressStxBalance
       type: object
@@ -9708,9 +10236,13 @@ components:
         locked: locked
         burnchain_unlock_height: 1
         total_received: total_received
+        estimated_balance: estimated_balance
         total_miner_rewards_received: total_miner_rewards_received
       properties:
         balance:
+          type: string
+        estimated_balance:
+          description: Total STX balance considering pending mempool transactions
           type: string
         total_sent:
           type: string
@@ -9810,6 +10342,7 @@ components:
           locked: locked
           burnchain_unlock_height: 1
           total_received: total_received
+          estimated_balance: estimated_balance
           total_miner_rewards_received: total_miner_rewards_received
         non_fungible_tokens:
           key:
@@ -10668,6 +11201,7 @@ components:
           locked: locked
           burnchain_unlock_height: 1
           total_received: total_received
+          estimated_balance: estimated_balance
           total_miner_rewards_received: total_miner_rewards_received
         entity_type: standard_address
         entity_id: entity_id
@@ -10856,6 +11390,7 @@ components:
             locked: locked
             burnchain_unlock_height: 1
             total_received: total_received
+            estimated_balance: estimated_balance
             total_miner_rewards_received: total_miner_rewards_received
           entity_type: standard_address
           entity_id: entity_id
@@ -11109,23 +11644,24 @@ components:
       type: object
     get_blocks_200_response_results_inner:
       example:
-        execution_cost_write_count: 3
+        execution_cost_write_count: 2
         burn_block_time_iso: burn_block_time_iso
         burn_block_hash: burn_block_hash
-        tx_count: 5
-        execution_cost_read_length: 7
+        tx_count: 2
+        execution_cost_read_length: 9
         parent_block_hash: parent_block_hash
         canonical: true
         burn_block_height: 5
         parent_index_block_hash: parent_index_block_hash
         block_time: 6
         index_block_hash: index_block_hash
-        execution_cost_runtime: 9
+        execution_cost_runtime: 3
         block_time_iso: block_time_iso
-        execution_cost_read_count: 2
-        burn_block_time: 1
+        execution_cost_read_count: 7
+        tenure_height: 1
+        burn_block_time: 5
         miner_txid: miner_txid
-        execution_cost_write_length: 2
+        execution_cost_write_length: 4
         hash: hash
         height: 0
       properties:
@@ -11146,6 +11682,9 @@ components:
           description: An ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ) indicating when this
             block was mined.
           type: string
+        tenure_height:
+          description: The tenure height (AKA coinbase height) of this block
+          type: integer
         index_block_hash:
           description: The only hash that can uniquely identify an anchored block
             or an unconfirmed state trie
@@ -11210,6 +11749,7 @@ components:
       - miner_txid
       - parent_block_hash
       - parent_index_block_hash
+      - tenure_height
       - tx_count
       type: object
     get_blocks_200_response:
@@ -11221,42 +11761,44 @@ components:
         offset: 0
         limit: 20
         results:
-        - execution_cost_write_count: 3
+        - execution_cost_write_count: 2
           burn_block_time_iso: burn_block_time_iso
           burn_block_hash: burn_block_hash
-          tx_count: 5
-          execution_cost_read_length: 7
+          tx_count: 2
+          execution_cost_read_length: 9
           parent_block_hash: parent_block_hash
           canonical: true
           burn_block_height: 5
           parent_index_block_hash: parent_index_block_hash
           block_time: 6
           index_block_hash: index_block_hash
-          execution_cost_runtime: 9
+          execution_cost_runtime: 3
           block_time_iso: block_time_iso
-          execution_cost_read_count: 2
-          burn_block_time: 1
+          execution_cost_read_count: 7
+          tenure_height: 1
+          burn_block_time: 5
           miner_txid: miner_txid
-          execution_cost_write_length: 2
+          execution_cost_write_length: 4
           hash: hash
           height: 0
-        - execution_cost_write_count: 3
+        - execution_cost_write_count: 2
           burn_block_time_iso: burn_block_time_iso
           burn_block_hash: burn_block_hash
-          tx_count: 5
-          execution_cost_read_length: 7
+          tx_count: 2
+          execution_cost_read_length: 9
           parent_block_hash: parent_block_hash
           canonical: true
           burn_block_height: 5
           parent_index_block_hash: parent_index_block_hash
           block_time: 6
           index_block_hash: index_block_hash
-          execution_cost_runtime: 9
+          execution_cost_runtime: 3
           block_time_iso: block_time_iso
-          execution_cost_read_count: 2
-          burn_block_time: 1
+          execution_cost_read_count: 7
+          tenure_height: 1
+          burn_block_time: 5
           miner_txid: miner_txid
-          execution_cost_write_length: 2
+          execution_cost_write_length: 4
           hash: hash
           height: 0
       properties:
@@ -11497,6 +12039,35 @@ components:
       - results
       - total
       type: object
+    get_signer_signatures_for_block_200_response:
+      example:
+        total: 1
+        offset: 0
+        limit: 20
+        results:
+        - results
+        - results
+      properties:
+        limit:
+          example: 20
+          type: integer
+        offset:
+          example: 0
+          type: integer
+        total:
+          example: 1
+          type: integer
+        results:
+          items:
+            description: Array of hex strings representing the block's signer signature
+            type: string
+          type: array
+      required:
+      - limit
+      - offset
+      - results
+      - total
+      type: object
     get_burn_blocks_200_response_results_inner:
       example:
         burn_block_time_iso: burn_block_time_iso
@@ -11607,42 +12178,44 @@ components:
         offset: 0
         limit: 20
         results:
-        - execution_cost_write_count: 3
+        - execution_cost_write_count: 2
           burn_block_time_iso: burn_block_time_iso
           burn_block_hash: burn_block_hash
-          tx_count: 5
-          execution_cost_read_length: 7
+          tx_count: 2
+          execution_cost_read_length: 9
           parent_block_hash: parent_block_hash
           canonical: true
           burn_block_height: 5
           parent_index_block_hash: parent_index_block_hash
           block_time: 6
           index_block_hash: index_block_hash
-          execution_cost_runtime: 9
+          execution_cost_runtime: 3
           block_time_iso: block_time_iso
-          execution_cost_read_count: 2
-          burn_block_time: 1
+          execution_cost_read_count: 7
+          tenure_height: 1
+          burn_block_time: 5
           miner_txid: miner_txid
-          execution_cost_write_length: 2
+          execution_cost_write_length: 4
           hash: hash
           height: 0
-        - execution_cost_write_count: 3
+        - execution_cost_write_count: 2
           burn_block_time_iso: burn_block_time_iso
           burn_block_hash: burn_block_hash
-          tx_count: 5
-          execution_cost_read_length: 7
+          tx_count: 2
+          execution_cost_read_length: 9
           parent_block_hash: parent_block_hash
           canonical: true
           burn_block_height: 5
           parent_index_block_hash: parent_index_block_hash
           block_time: 6
           index_block_hash: index_block_hash
-          execution_cost_runtime: 9
+          execution_cost_runtime: 3
           block_time_iso: block_time_iso
-          execution_cost_read_count: 2
-          burn_block_time: 1
+          execution_cost_read_count: 7
+          tenure_height: 1
+          burn_block_time: 5
           miner_txid: miner_txid
-          execution_cost_write_length: 2
+          execution_cost_write_length: 4
           hash: hash
           height: 0
       properties:
