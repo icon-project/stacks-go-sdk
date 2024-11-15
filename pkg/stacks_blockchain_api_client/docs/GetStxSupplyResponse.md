@@ -5,7 +5,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **UnlockedPercent** | **string** | String quoted decimal number of the percentage of STX that have unlocked | 
-**TotalStx** | **string** | String quoted decimal number of the total possible number of STX | 
+**TotalStx** | **string** | String quoted decimal number of the total circulating number of STX (at the input block height if provided, otherwise the current block height) | 
+**TotalStxYear2050** | **string** | String quoted decimal number of total circulating STX supply in year 2050. STX supply grows approx 0.3% annually thereafter in perpetuity. | 
 **UnlockedStx** | **string** | String quoted decimal number of the STX that have been mined or unlocked | 
 **BlockHeight** | **int32** | The block height at which this information was queried | 
 
@@ -13,7 +14,7 @@ Name | Type | Description | Notes
 
 ### NewGetStxSupplyResponse
 
-`func NewGetStxSupplyResponse(unlockedPercent string, totalStx string, unlockedStx string, blockHeight int32, ) *GetStxSupplyResponse`
+`func NewGetStxSupplyResponse(unlockedPercent string, totalStx string, totalStxYear2050 string, unlockedStx string, blockHeight int32, ) *GetStxSupplyResponse`
 
 NewGetStxSupplyResponse instantiates a new GetStxSupplyResponse object
 This constructor will assign default values to properties that have it defined,
@@ -66,6 +67,26 @@ and a boolean to check if the value has been set.
 `func (o *GetStxSupplyResponse) SetTotalStx(v string)`
 
 SetTotalStx sets TotalStx field to given value.
+
+
+### GetTotalStxYear2050
+
+`func (o *GetStxSupplyResponse) GetTotalStxYear2050() string`
+
+GetTotalStxYear2050 returns the TotalStxYear2050 field if non-nil, zero value otherwise.
+
+### GetTotalStxYear2050Ok
+
+`func (o *GetStxSupplyResponse) GetTotalStxYear2050Ok() (*string, bool)`
+
+GetTotalStxYear2050Ok returns a tuple with the TotalStxYear2050 field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTotalStxYear2050
+
+`func (o *GetStxSupplyResponse) SetTotalStxYear2050(v string)`
+
+SetTotalStxYear2050 sets TotalStxYear2050 field to given value.
 
 
 ### GetUnlockedStx

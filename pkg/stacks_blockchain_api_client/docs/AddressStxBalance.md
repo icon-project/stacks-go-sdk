@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Balance** | **string** |  | 
+**EstimatedBalance** | Pointer to **string** | Total STX balance considering pending mempool transactions | [optional] 
 **TotalSent** | **string** |  | 
 **TotalReceived** | **string** |  | 
 **TotalFeesSent** | **string** |  | 
@@ -54,6 +55,31 @@ and a boolean to check if the value has been set.
 
 SetBalance sets Balance field to given value.
 
+
+### GetEstimatedBalance
+
+`func (o *AddressStxBalance) GetEstimatedBalance() string`
+
+GetEstimatedBalance returns the EstimatedBalance field if non-nil, zero value otherwise.
+
+### GetEstimatedBalanceOk
+
+`func (o *AddressStxBalance) GetEstimatedBalanceOk() (*string, bool)`
+
+GetEstimatedBalanceOk returns a tuple with the EstimatedBalance field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetEstimatedBalance
+
+`func (o *AddressStxBalance) SetEstimatedBalance(v string)`
+
+SetEstimatedBalance sets EstimatedBalance field to given value.
+
+### HasEstimatedBalance
+
+`func (o *AddressStxBalance) HasEstimatedBalance() bool`
+
+HasEstimatedBalance returns a boolean if a field has been set.
 
 ### GetTotalSent
 

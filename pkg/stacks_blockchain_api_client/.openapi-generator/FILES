@@ -81,6 +81,7 @@ docs/ContractCallTransactionContractCallFunctionArgsInner.md
 docs/ContractListResponse.md
 docs/ContractSearchResult.md
 docs/ContractSearchResultTxData.md
+docs/ErrorResponse.md
 docs/ExtendedV1PoxEventsGetPoxParameter.md
 docs/FaucetsAPI.md
 docs/FeeRate.md
@@ -128,6 +129,7 @@ docs/GetPoxCycleSigners200ResponseResultsInner.md
 docs/GetPoxCycles200Response.md
 docs/GetPoxCycles200ResponseResultsInner.md
 docs/GetRawTransactionResult.md
+docs/GetSignerSignaturesForBlock200Response.md
 docs/GetSmartContractsStatus200ResponseValue.md
 docs/GetSmartContractsStatus200ResponseValueAnyOf.md
 docs/GetSmartContractsStatus200ResponseValueAnyOf1.md
@@ -336,6 +338,7 @@ model_contract_call_transaction_contract_call_function_args_inner.go
 model_contract_list_response.go
 model_contract_search_result.go
 model_contract_search_result_tx_data.go
+model_error_response.go
 model_fee_rate.go
 model_fee_rate_request.go
 model_ft_balance.go
@@ -379,6 +382,7 @@ model_get_pox_cycle_signers_200_response_results_inner.go
 model_get_pox_cycles_200_response.go
 model_get_pox_cycles_200_response_results_inner.go
 model_get_raw_transaction_result.go
+model_get_signer_signatures_for_block_200_response.go
 model_get_smart_contracts_status_200_response_value.go
 model_get_smart_contracts_status_200_response_value_any_of.go
 model_get_smart_contracts_status_200_response_value_any_of_1.go
@@ -516,21 +520,4 @@ model_transaction_not_found_result.go
 model_tx_search_result.go
 model_tx_search_result_tx_data.go
 response.go
-test/api_accounts_test.go
-test/api_blocks_test.go
-test/api_burn_blocks_test.go
-test/api_faucets_test.go
-test/api_fees_test.go
-test/api_fungible_tokens_test.go
-test/api_info_test.go
-test/api_mempool_test.go
-test/api_microblocks_test.go
-test/api_names_test.go
-test/api_non_fungible_tokens_test.go
-test/api_proof_of_transfer_test.go
-test/api_search_test.go
-test/api_smart_contracts_test.go
-test/api_stacking_rewards_test.go
-test/api_stacking_test.go
-test/api_transactions_test.go
 utils.go
