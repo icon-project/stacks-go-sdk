@@ -140,6 +140,7 @@ func TestMakeContractDeploy(t *testing.T) {
 				senderKey,
 				tt.fee,
 				tt.nonce,
+				stacks.ClarityVersionUnspecified,
 			)
 
 			if tt.expectedErr {

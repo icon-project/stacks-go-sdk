@@ -9,8 +9,8 @@ import (
 
 func TestEmptyPostConditionsSerialization(t *testing.T) {
 	emptyPostConditions := []PostCondition{}
-	serialized := SerializePostConditions(emptyPostConditions)
-
+	serialized, err := SerializePostConditions(emptyPostConditions)
+	assert.NoError(t, err, "Serialization of empty post conditions should not produce an error")
 	// Check that the serialized data is 4 bytes long (uint32 for length)
 	assert.Equal(t, 4, len(serialized), "Serialized empty post conditions should be 4 bytes long")
 
@@ -35,7 +35,8 @@ func TestEmptyPostConditionsDeserialization(t *testing.T) {
 func TestEmptyPostConditionsRoundTrip(t *testing.T) {
 	originalPostConditions := []PostCondition{}
 
-	serialized := SerializePostConditions(originalPostConditions)
+	serialized, err := SerializePostConditions(originalPostConditions)
+	assert.NoError(t, err, "Serialization of empty post conditions should not produce an error")
 
 	deserialized, bytesRead, err := DeserializePostConditions(serialized)
 

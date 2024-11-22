@@ -163,7 +163,7 @@ func Test_stacks_blockchain_api_client_TransactionsAPIService(t *testing.T) {
 	})
 
 	t.Run("Test TransactionsAPIService GetTransactionsByBlockHeight", func(t *testing.T) {
-		resp, httpRes, err := apiClient.TransactionsAPI.GetTransactionsByBlockHeight(context.Background(), height).Execute()
+		resp, httpRes, err := apiClient.TransactionsAPI.GetTransactionsByBlockHeight(context.Background(), int32(height)).Execute()
 
 		require.Nil(t, err)
 		require.NotNil(t, resp)

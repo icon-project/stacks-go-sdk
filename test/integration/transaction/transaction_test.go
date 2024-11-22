@@ -126,6 +126,7 @@ func TestBroadcastContractDeployTransaction(t *testing.T) {
 		privateKey,
 		nil, // Auto-estimate fee
 		nil, // Auto-estimate nonce
+		stacks.ClarityVersionUnspecified,
 	)
 	if err != nil {
 		t.Fatalf("Failed to create contract deploy transaction: %v", err)

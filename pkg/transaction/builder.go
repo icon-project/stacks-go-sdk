@@ -229,6 +229,7 @@ func MakeContractDeploy(
 	senderKey []byte,
 	fee *big.Int,
 	nonce *big.Int,
+	clarityVersion stacks.ClarityVersion,
 ) (*SmartContractTransaction, error) {
 	if contractName == "" || codeBody == "" || len(senderKey) == 0 {
 		return nil, &CustomError{Message: "Invalid parameters: contractName, codeBody, or senderKey are empty"}
@@ -246,6 +247,7 @@ func MakeContractDeploy(
 		0,
 		stacks.AnchorModeOnChainOnly,
 		stacks.PostConditionModeAllow,
+		clarityVersion,
 	)
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}

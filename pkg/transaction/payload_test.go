@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/icon-project/stacks-go-sdk/pkg/clarity"
+	"github.com/icon-project/stacks-go-sdk/pkg/stacks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -123,7 +124,7 @@ func TestSmartContractPayloadValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewSmartContractPayload(tt.contractName, tt.codeBody)
+			_, err := NewSmartContractPayload(tt.contractName, tt.codeBody, stacks.ClarityVersionUnspecified)
 			if tt.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
@@ -140,7 +141,7 @@ func TestSmartContractPayloadSerializationAndDeserialization(t *testing.T) {
 (define-public (increment)
     (ok (var-set counter (+ (var-get counter) 1))))
 `
-	payload, err := NewSmartContractPayload(contractName, codeBody)
+	payload, err := NewSmartContractPayload(contractName, codeBody, stacks.ClarityVersionUnspecified)
 	assert.NoError(t, err)
 
 	serialized, err := payload.Serialize()
