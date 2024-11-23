@@ -208,7 +208,7 @@ func MakeSTXTokenTransfer(
 
 	signer := deriveSigner(senderKey)
 
-	tx, err := NewTokenTransferTransaction(recipient, amount.Uint64(), memo, network.Version, network.ChainID, signer, 0, 0, stacks.AnchorModeOnChainOnly, stacks.PostConditionModeAllow)
+	tx, err := NewTokenTransferTransaction(recipient, amount.Uint64(), memo, network.Version, network.ChainID, signer, 0, 0, stacks.PostConditionModeAllow)
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
 	}
@@ -240,14 +240,13 @@ func MakeContractDeploy(
 	tx, err := NewSmartContractTransaction(
 		contractName,
 		codeBody,
+		clarityVersion,
 		network.Version,
 		network.ChainID,
 		signer,
 		0,
 		0,
-		stacks.AnchorModeOnChainOnly,
 		stacks.PostConditionModeAllow,
-		clarityVersion,
 	)
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
@@ -278,7 +277,7 @@ func MakeContractCall(
 
 	signer := deriveSigner(senderKey)
 
-	tx, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, network.Version, network.ChainID, signer, 0, 0, stacks.AnchorModeOnChainOnly, stacks.PostConditionModeAllow)
+	tx, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, network.Version, network.ChainID, signer, 0, 0, stacks.PostConditionModeAllow)
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
 	}

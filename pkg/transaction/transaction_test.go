@@ -147,7 +147,6 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 		signer            [20]byte
 		nonce             uint64
 		fee               uint64
-		anchorMode        stacks.AnchorMode
 		postConditionMode stacks.PostConditionMode
 	}{
 		{
@@ -160,7 +159,6 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 			signer:            [20]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
 			nonce:             1,
 			fee:               1000,
-			anchorMode:        stacks.AnchorModeOnChainOnly,
 			postConditionMode: stacks.PostConditionModeAllow,
 		},
 	}
@@ -176,7 +174,6 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 				tt.signer,
 				tt.nonce,
 				tt.fee,
-				tt.anchorMode,
 				tt.postConditionMode,
 			)
 
@@ -209,7 +206,7 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 func TestContractCallTransactionSerializationAndDeserialization(t *testing.T) {
 	transactionVersion := stacks.TransactionVersionTestnet
 	chainID := stacks.ChainIDTestnet
-	anchorMode := stacks.AnchorModeOnChainOnly
+	anchorMode := stacks.AnchorModeAny
 	postConditionMode := stacks.PostConditionModeDeny
 
 	contractAddress := "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
@@ -244,7 +241,7 @@ func TestContractCallTransactionSerializationAndDeserialization(t *testing.T) {
 	var signer [20]byte
 	copy(signer[:], crypto.Hash160(senderPublicKey))
 
-	transaction, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, transactionVersion, chainID, signer, nonce, fee, anchorMode, postConditionMode)
+	transaction, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, transactionVersion, chainID, signer, nonce, fee, postConditionMode)
 	assert.NoError(t, err)
 
 	err = SignTransaction(transaction, secretKeyBytes)
@@ -339,7 +336,6 @@ func TestSmartContractTransactionInterfaces(t *testing.T) {
 	codeBody := `(define-data-var counter int 0)`
 	transactionVersion := stacks.TransactionVersionTestnet
 	chainID := stacks.ChainIDTestnet
-	anchorMode := stacks.AnchorModeOnChainOnly
 	postConditionMode := stacks.PostConditionModeDeny
 
 	var signer [20]byte
@@ -348,14 +344,13 @@ func TestSmartContractTransactionInterfaces(t *testing.T) {
 	tx, err := NewSmartContractTransaction(
 		contractName,
 		codeBody,
+		stacks.ClarityVersionUnspecified,
 		transactionVersion,
 		chainID,
 		signer,
 		0,
 		0,
-		anchorMode,
 		postConditionMode,
-		stacks.ClarityVersionUnspecified,
 	)
 	assert.NoError(t, err)
 
@@ -385,7 +380,7 @@ func TestSmartContractTransactionSerializationAndDeserialization(t *testing.T) {
 `
 	transactionVersion := stacks.TransactionVersionTestnet
 	chainID := stacks.ChainIDTestnet
-	anchorMode := stacks.AnchorModeOnChainOnly
+	anchorMode := stacks.AnchorModeAny
 	postConditionMode := stacks.PostConditionModeDeny
 
 	addressHashMode := stacks.AddressHashModeSerializeP2PKH
@@ -407,14 +402,13 @@ func TestSmartContractTransactionSerializationAndDeserialization(t *testing.T) {
 	transaction, err := NewSmartContractTransaction(
 		contractName,
 		codeBody,
+		stacks.ClarityVersionUnspecified,
 		transactionVersion,
 		chainID,
 		signer,
 		nonce,
 		fee,
-		anchorMode,
 		postConditionMode,
-		stacks.ClarityVersionUnspecified,
 	)
 	assert.NoError(t, err)
 
@@ -494,7 +488,6 @@ func assertTokenTransferTransactionFields(t *testing.T, tx *TokenTransferTransac
 	signer            [20]byte
 	nonce             uint64
 	fee               uint64
-	anchorMode        stacks.AnchorMode
 	postConditionMode stacks.PostConditionMode
 },
 ) {
@@ -503,7 +496,6 @@ func assertTokenTransferTransactionFields(t *testing.T, tx *TokenTransferTransac
 	assert.Equal(t, expected.signer, tx.Auth.OriginAuth.Signer)
 	assert.Equal(t, expected.nonce, tx.Auth.OriginAuth.Nonce)
 	assert.Equal(t, expected.fee, tx.Auth.OriginAuth.Fee)
-	assert.Equal(t, expected.anchorMode, tx.AnchorMode)
 	assert.Equal(t, expected.postConditionMode, tx.PostConditionMode)
 	assert.Equal(t, expected.amount, tx.Payload.Amount)
 	assert.Equal(t, expected.memo, tx.Payload.Memo)

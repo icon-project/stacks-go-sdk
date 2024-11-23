@@ -21,9 +21,10 @@ type BaseTransaction struct {
 	Version           stacks.TransactionVersion
 	ChainID           stacks.ChainID
 	Auth              TransactionAuth
-	AnchorMode        stacks.AnchorMode
 	PostConditionMode stacks.PostConditionMode
 	PostConditions    []PostCondition
+	/** @deprecated Not used, starting with Stacks 2.5. Still needed for serialization. */
+	AnchorMode stacks.AnchorMode
 }
 
 type TokenTransferTransaction struct {
@@ -65,7 +66,6 @@ func NewTokenTransferTransaction(
 	signer [20]byte,
 	nonce uint64,
 	fee uint64,
-	anchorMode stacks.AnchorMode,
 	postConditionMode stacks.PostConditionMode,
 ) (*TokenTransferTransaction, error) {
 	payload, err := NewTokenTransferPayload(recipient, amount, memo)
@@ -87,7 +87,7 @@ func NewTokenTransferTransaction(
 					Signature:   [65]byte{}, // This will be filled when signing the transaction
 				},
 			},
-			AnchorMode:        anchorMode,
+			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
 			PostConditions:    []PostCondition{}, // Empty post condition
 		},
@@ -98,14 +98,13 @@ func NewTokenTransferTransaction(
 func NewSmartContractTransaction(
 	contractName string,
 	codeBody string,
+	clarityVersion stacks.ClarityVersion,
 	version stacks.TransactionVersion,
 	chainID stacks.ChainID,
 	signer [20]byte,
 	nonce uint64,
 	fee uint64,
-	anchorMode stacks.AnchorMode,
 	postConditionMode stacks.PostConditionMode,
-	clarityVersion stacks.ClarityVersion,
 ) (*SmartContractTransaction, error) {
 	payload, err := NewSmartContractPayload(contractName, codeBody, clarityVersion)
 	if err != nil {
@@ -127,7 +126,7 @@ func NewSmartContractTransaction(
 					Signature:   [65]byte{},
 				},
 			},
-			AnchorMode:        anchorMode,
+			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
 			PostConditions:    []PostCondition{},
 		},
@@ -145,7 +144,6 @@ func NewContractCallTransaction(
 	signer [20]byte,
 	nonce uint64,
 	fee uint64,
-	anchorMode stacks.AnchorMode,
 	postConditionMode stacks.PostConditionMode,
 ) (*ContractCallTransaction, error) {
 	payload, err := NewContractCallPayload(contractAddress, contractName, functionName, functionArgs)
@@ -168,7 +166,7 @@ func NewContractCallTransaction(
 					Signature:   [65]byte{}, // This will be filled when signing the transaction
 				},
 			},
-			AnchorMode:        anchorMode,
+			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
 			PostConditions:    []PostCondition{}, // Empty post condition
 		},
