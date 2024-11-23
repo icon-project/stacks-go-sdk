@@ -70,7 +70,7 @@ func TestBroadcastContractCallTransaction(t *testing.T) {
 	}
 
 	network := stacks.NewStacksTestnet()
-	tx, err := transaction.MakeContractCall(contractAddress, contractName, functionName, functionArgs, *network, senderAddress, privateKey, nil, nil)
+	tx, err := transaction.MakeContractCall(contractAddress, contractName, functionName, functionArgs, *network, senderAddress, privateKey, nil, nil, stacks.PostConditionModeAllow, []transaction.PostCondition{})
 	if err != nil {
 		t.Fatalf("Failed to create transaction: %v", err)
 	}
@@ -121,12 +121,14 @@ func TestBroadcastContractDeployTransaction(t *testing.T) {
 	tx, err := transaction.MakeContractDeploy(
 		contractName,
 		codeBody,
+		stacks.ClarityVersionUnspecified,
 		*network,
 		senderAddress,
 		privateKey,
 		nil, // Auto-estimate fee
 		nil, // Auto-estimate nonce
-		stacks.ClarityVersionUnspecified,
+		stacks.PostConditionModeAllow,
+		[]transaction.PostCondition{},
 	)
 	if err != nil {
 		t.Fatalf("Failed to create contract deploy transaction: %v", err)

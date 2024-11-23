@@ -67,6 +67,7 @@ func NewTokenTransferTransaction(
 	nonce uint64,
 	fee uint64,
 	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*TokenTransferTransaction, error) {
 	payload, err := NewTokenTransferPayload(recipient, amount, memo)
 	if err != nil {
@@ -89,7 +90,7 @@ func NewTokenTransferTransaction(
 			},
 			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
-			PostConditions:    []PostCondition{}, // Empty post condition
+			PostConditions:    postConditions,
 		},
 		Payload: *payload,
 	}, nil
@@ -105,6 +106,7 @@ func NewSmartContractTransaction(
 	nonce uint64,
 	fee uint64,
 	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*SmartContractTransaction, error) {
 	payload, err := NewSmartContractPayload(contractName, codeBody, clarityVersion)
 	if err != nil {
@@ -128,7 +130,7 @@ func NewSmartContractTransaction(
 			},
 			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
-			PostConditions:    []PostCondition{},
+			PostConditions:    postConditions,
 		},
 		Payload: *payload,
 	}, nil
@@ -145,6 +147,7 @@ func NewContractCallTransaction(
 	nonce uint64,
 	fee uint64,
 	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*ContractCallTransaction, error) {
 	payload, err := NewContractCallPayload(contractAddress, contractName, functionName, functionArgs)
 	if err != nil {
@@ -168,7 +171,7 @@ func NewContractCallTransaction(
 			},
 			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
-			PostConditions:    []PostCondition{}, // Empty post condition
+			PostConditions:    postConditions,
 		},
 		Payload: *payload,
 	}, nil

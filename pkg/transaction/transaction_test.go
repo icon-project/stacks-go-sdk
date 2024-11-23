@@ -148,6 +148,7 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 		nonce             uint64
 		fee               uint64
 		postConditionMode stacks.PostConditionMode
+		postConditions    []PostCondition
 	}{
 		{
 			name:              "Valid transaction",
@@ -160,6 +161,7 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 			nonce:             1,
 			fee:               1000,
 			postConditionMode: stacks.PostConditionModeAllow,
+			postConditions:    []PostCondition{},
 		},
 	}
 
@@ -175,6 +177,7 @@ func TestNewTokenTransferTransaction(t *testing.T) {
 				tt.nonce,
 				tt.fee,
 				tt.postConditionMode,
+				tt.postConditions,
 			)
 
 			require.NoError(t, err)
@@ -241,7 +244,7 @@ func TestContractCallTransactionSerializationAndDeserialization(t *testing.T) {
 	var signer [20]byte
 	copy(signer[:], crypto.Hash160(senderPublicKey))
 
-	transaction, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, transactionVersion, chainID, signer, nonce, fee, postConditionMode)
+	transaction, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, transactionVersion, chainID, signer, nonce, fee, postConditionMode, []PostCondition{})
 	assert.NoError(t, err)
 
 	err = SignTransaction(transaction, secretKeyBytes)
@@ -351,6 +354,7 @@ func TestSmartContractTransactionInterfaces(t *testing.T) {
 		0,
 		0,
 		postConditionMode,
+		[]PostCondition{},
 	)
 	assert.NoError(t, err)
 
@@ -409,6 +413,7 @@ func TestSmartContractTransactionSerializationAndDeserialization(t *testing.T) {
 		nonce,
 		fee,
 		postConditionMode,
+		[]PostCondition{},
 	)
 	assert.NoError(t, err)
 
@@ -489,6 +494,7 @@ func assertTokenTransferTransactionFields(t *testing.T, tx *TokenTransferTransac
 	nonce             uint64
 	fee               uint64
 	postConditionMode stacks.PostConditionMode
+	postConditions    []PostCondition
 },
 ) {
 	assert.Equal(t, expected.version, tx.Version)
