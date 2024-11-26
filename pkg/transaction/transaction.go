@@ -21,9 +21,10 @@ type BaseTransaction struct {
 	Version           stacks.TransactionVersion
 	ChainID           stacks.ChainID
 	Auth              TransactionAuth
-	AnchorMode        stacks.AnchorMode
 	PostConditionMode stacks.PostConditionMode
 	PostConditions    []PostCondition
+	/** @deprecated Not used, starting with Stacks 2.5. Still needed for serialization. */
+	AnchorMode stacks.AnchorMode
 }
 
 type TokenTransferTransaction struct {
@@ -65,8 +66,8 @@ func NewTokenTransferTransaction(
 	signer [20]byte,
 	nonce uint64,
 	fee uint64,
-	anchorMode stacks.AnchorMode,
 	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*TokenTransferTransaction, error) {
 	payload, err := NewTokenTransferPayload(recipient, amount, memo)
 	if err != nil {
@@ -87,9 +88,9 @@ func NewTokenTransferTransaction(
 					Signature:   [65]byte{}, // This will be filled when signing the transaction
 				},
 			},
-			AnchorMode:        anchorMode,
+			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
-			PostConditions:    []PostCondition{}, // Empty post condition
+			PostConditions:    postConditions,
 		},
 		Payload: *payload,
 	}, nil
@@ -98,15 +99,16 @@ func NewTokenTransferTransaction(
 func NewSmartContractTransaction(
 	contractName string,
 	codeBody string,
+	clarityVersion stacks.ClarityVersion,
 	version stacks.TransactionVersion,
 	chainID stacks.ChainID,
 	signer [20]byte,
 	nonce uint64,
 	fee uint64,
-	anchorMode stacks.AnchorMode,
 	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*SmartContractTransaction, error) {
-	payload, err := NewSmartContractPayload(contractName, codeBody)
+	payload, err := NewSmartContractPayload(contractName, codeBody, clarityVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -126,9 +128,9 @@ func NewSmartContractTransaction(
 					Signature:   [65]byte{},
 				},
 			},
-			AnchorMode:        anchorMode,
+			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
-			PostConditions:    []PostCondition{},
+			PostConditions:    postConditions,
 		},
 		Payload: *payload,
 	}, nil
@@ -144,8 +146,8 @@ func NewContractCallTransaction(
 	signer [20]byte,
 	nonce uint64,
 	fee uint64,
-	anchorMode stacks.AnchorMode,
 	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*ContractCallTransaction, error) {
 	payload, err := NewContractCallPayload(contractAddress, contractName, functionName, functionArgs)
 	if err != nil {
@@ -167,9 +169,9 @@ func NewContractCallTransaction(
 					Signature:   [65]byte{}, // This will be filled when signing the transaction
 				},
 			},
-			AnchorMode:        anchorMode,
+			AnchorMode:        stacks.AnchorModeAny,
 			PostConditionMode: postConditionMode,
-			PostConditions:    []PostCondition{}, // Empty post condition
+			PostConditions:    postConditions,
 		},
 		Payload: *payload,
 	}, nil
@@ -185,19 +187,22 @@ func (t *TokenTransferTransaction) Serialize() ([]byte, error) {
 
 	authBytes, err := t.Auth.Serialize()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to serialize auth: %w", err)
 	}
 	buf = append(buf, authBytes...)
 
 	buf = append(buf, byte(t.AnchorMode))
 	buf = append(buf, byte(t.PostConditionMode))
 
-	postConditionsBytes := SerializePostConditions(t.PostConditions)
+	postConditionsBytes, err := SerializePostConditions(t.PostConditions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize post conditions: %w", err)
+	}
 	buf = append(buf, postConditionsBytes...)
 
 	payloadBytes, err := t.Payload.Serialize()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to serialize token transfer payload: %w", err)
 	}
 	buf = append(buf, payloadBytes...)
 
@@ -276,7 +281,10 @@ func (t *SmartContractTransaction) Serialize() ([]byte, error) {
 	buf = append(buf, byte(t.AnchorMode))
 	buf = append(buf, byte(t.PostConditionMode))
 
-	postConditionsBytes := SerializePostConditions(t.PostConditions)
+	postConditionsBytes, err := SerializePostConditions(t.PostConditions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize post conditions: %w", err)
+	}
 	buf = append(buf, postConditionsBytes...)
 
 	payloadBytes, err := t.Payload.Serialize()
@@ -329,7 +337,8 @@ func (t *SmartContractTransaction) Deserialize(data []byte) error {
 	if len(data) < offset+1 {
 		return errors.New("insufficient data for payload type")
 	}
-	if stacks.PayloadType(data[offset]) != stacks.PayloadTypeSmartContract {
+	payloadType := stacks.PayloadType(data[offset])
+	if payloadType != stacks.PayloadTypeSmartContract && payloadType != stacks.PayloadTypeVersionedSmartContract {
 		return errors.New("invalid payload type for smart contract transaction")
 	}
 
@@ -360,7 +369,10 @@ func (t *ContractCallTransaction) Serialize() ([]byte, error) {
 
 	buf = append(buf, byte(t.PostConditionMode))
 
-	postConditionsBytes := SerializePostConditions(t.PostConditions)
+	postConditionsBytes, err := SerializePostConditions(t.PostConditions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize post conditions: %w", err)
+	}
 	buf = append(buf, postConditionsBytes...)
 
 	payloadBytes, err := t.Payload.Serialize()
@@ -481,7 +493,7 @@ func DeserializeTransaction(data []byte) (StacksTransaction, error) {
 			return nil, fmt.Errorf("failed to deserialize token transfer payload: %w", err)
 		}
 		tx = tokenTx
-	case stacks.PayloadTypeSmartContract:
+	case stacks.PayloadTypeSmartContract, stacks.PayloadTypeVersionedSmartContract:
 		contractTx := &SmartContractTransaction{BaseTransaction: baseTx}
 		_, err := contractTx.Payload.Deserialize(data[offset:])
 		if err != nil {

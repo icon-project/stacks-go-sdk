@@ -135,11 +135,14 @@ func TestMakeContractDeploy(t *testing.T) {
 			tx, err := MakeContractDeploy(
 				tt.contractName,
 				tt.codeBody,
+				stacks.ClarityVersionUnspecified,
 				*network,
 				senderAddress,
 				senderKey,
 				tt.fee,
 				tt.nonce,
+				stacks.PostConditionModeAllow,
+				[]PostCondition{},
 			)
 
 			if tt.expectedErr {

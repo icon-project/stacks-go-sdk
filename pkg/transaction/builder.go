@@ -208,7 +208,7 @@ func MakeSTXTokenTransfer(
 
 	signer := deriveSigner(senderKey)
 
-	tx, err := NewTokenTransferTransaction(recipient, amount.Uint64(), memo, network.Version, network.ChainID, signer, 0, 0, stacks.AnchorModeOnChainOnly, stacks.PostConditionModeAllow)
+	tx, err := NewTokenTransferTransaction(recipient, amount.Uint64(), memo, network.Version, network.ChainID, signer, 0, 0, stacks.PostConditionModeAllow, []PostCondition{})
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
 	}
@@ -224,11 +224,14 @@ func MakeSTXTokenTransfer(
 func MakeContractDeploy(
 	contractName string,
 	codeBody string,
+	clarityVersion stacks.ClarityVersion,
 	network stacks.StacksNetwork,
 	senderAddress string,
 	senderKey []byte,
 	fee *big.Int,
 	nonce *big.Int,
+	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*SmartContractTransaction, error) {
 	if contractName == "" || codeBody == "" || len(senderKey) == 0 {
 		return nil, &CustomError{Message: "Invalid parameters: contractName, codeBody, or senderKey are empty"}
@@ -239,13 +242,14 @@ func MakeContractDeploy(
 	tx, err := NewSmartContractTransaction(
 		contractName,
 		codeBody,
+		clarityVersion,
 		network.Version,
 		network.ChainID,
 		signer,
 		0,
 		0,
-		stacks.AnchorModeOnChainOnly,
-		stacks.PostConditionModeAllow,
+		postConditionMode,
+		postConditions,
 	)
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
@@ -269,6 +273,8 @@ func MakeContractCall(
 	senderKey []byte,
 	fee *big.Int,
 	nonce *big.Int,
+	postConditionMode stacks.PostConditionMode,
+	postConditions []PostCondition,
 ) (*ContractCallTransaction, error) {
 	if contractAddress == "" || contractName == "" || functionName == "" || len(senderKey) == 0 {
 		return nil, &CustomError{Message: "Invalid parameters: contractAddress, contractName, functionName, or senderKey are empty"}
@@ -276,7 +282,7 @@ func MakeContractCall(
 
 	signer := deriveSigner(senderKey)
 
-	tx, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, network.Version, network.ChainID, signer, 0, 0, stacks.AnchorModeOnChainOnly, stacks.PostConditionModeAllow)
+	tx, err := NewContractCallTransaction(contractAddress, contractName, functionName, functionArgs, network.Version, network.ChainID, signer, 0, 0, postConditionMode, postConditions)
 	if err != nil {
 		return nil, &CustomError{Message: "Failed to create transaction", Err: err}
 	}

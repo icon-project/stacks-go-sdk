@@ -24,8 +24,9 @@ type TokenTransferPayload struct {
 }
 
 type SmartContractPayload struct {
-	ContractName string
-	CodeBody     string
+	ContractName   string
+	CodeBody       string
+	ClarityVersion stacks.ClarityVersion
 }
 
 type ContractCallPayload struct {
@@ -60,7 +61,7 @@ func NewTokenTransferPayload(recipient string, amount uint64, memo string) (*Tok
 	}, nil
 }
 
-func NewSmartContractPayload(contractName string, codeBody string) (*SmartContractPayload, error) {
+func NewSmartContractPayload(contractName string, codeBody string, clarityVersion stacks.ClarityVersion) (*SmartContractPayload, error) {
 	if err := validateContractName(contractName); err != nil {
 		return nil, err
 	}
@@ -70,8 +71,9 @@ func NewSmartContractPayload(contractName string, codeBody string) (*SmartContra
 	}
 
 	return &SmartContractPayload{
-		ContractName: contractName,
-		CodeBody:     codeBody,
+		ContractName:   contractName,
+		CodeBody:       codeBody,
+		ClarityVersion: clarityVersion,
 	}, nil
 }
 
@@ -141,10 +143,15 @@ func (p *TokenTransferPayload) Deserialize(data []byte) (int, error) {
 }
 
 func (p *SmartContractPayload) Serialize() ([]byte, error) {
-	buf := make([]byte, 0, len(p.ContractName)+len(p.CodeBody)+6) // 1 + 1 + 4 bytes for headers
+	buf := make([]byte, 0, len(p.ContractName)+len(p.CodeBody)+7) // 1 + 1 + 1 + 4 bytes for headers
 
 	// Payload type
-	buf = append(buf, byte(stacks.PayloadTypeSmartContract))
+	if p.ClarityVersion == stacks.ClarityVersionUnspecified {
+		buf = append(buf, byte(stacks.PayloadTypeSmartContract))
+	} else {
+		buf = append(buf, byte(stacks.PayloadTypeVersionedSmartContract))
+		buf = append(buf, byte(p.ClarityVersion))
+	}
 
 	// Contract name
 	if len(p.ContractName) > stacks.MaxStringLengthBytes {
@@ -163,11 +170,24 @@ func (p *SmartContractPayload) Serialize() ([]byte, error) {
 }
 
 func (p *SmartContractPayload) Deserialize(data []byte) (int, error) {
-	if len(data) < 2 || stacks.PayloadType(data[0]) != stacks.PayloadTypeSmartContract {
+	payloadType := stacks.PayloadType(data[0])
+	if len(data) < 2 ||
+		(payloadType != stacks.PayloadTypeSmartContract && payloadType != stacks.PayloadTypeVersionedSmartContract) {
 		return 0, errors.New("invalid smart contract payload")
 	}
 
 	offset := 1
+	if payloadType == stacks.PayloadTypeVersionedSmartContract {
+		p.ClarityVersion = stacks.ClarityVersion(data[offset])
+		if p.ClarityVersion != stacks.ClarityVersion1 &&
+			p.ClarityVersion != stacks.ClarityVersion2 &&
+			p.ClarityVersion != stacks.ClarityVersion3 {
+			return 0, fmt.Errorf("unsupported clarity version: %d", p.ClarityVersion)
+		}
+		offset++
+	} else {
+		p.ClarityVersion = stacks.ClarityVersionUnspecified
+	}
 
 	// Contract name
 	nameLen := int(data[offset])
