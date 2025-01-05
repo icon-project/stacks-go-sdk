@@ -175,6 +175,10 @@ func DeserializeAddress(address string) (stacks.AddressVersion, []byte, error) {
 		addrVersion = stacks.AddressVersionMainnetSingleSig
 	case byte(stacks.AddressVersionTestnetSingleSig):
 		addrVersion = stacks.AddressVersionTestnetSingleSig
+	case byte(stacks.AddressVersionMainnetMultiSig):
+		addrVersion = stacks.AddressVersionMainnetMultiSig
+	case byte(stacks.AddressVersionTestnetMultiSig):
+		addrVersion = stacks.AddressVersionTestnetMultiSig
 	default:
 		return 0, nil, fmt.Errorf("unknown address version: %d", version)
 	}
