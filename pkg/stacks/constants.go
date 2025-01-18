@@ -102,6 +102,8 @@ type AddressVersion uint8
 const (
 	AddressVersionMainnetSingleSig AddressVersion = 22
 	AddressVersionTestnetSingleSig AddressVersion = 26
+	AddressVersionMainnetMultiSig  AddressVersion = 20
+	AddressVersionTestnetMultiSig  AddressVersion = 21
 )
 
 type ClarityVersion uint8
