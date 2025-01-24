@@ -62,11 +62,19 @@ func C32Decode(input string) ([]byte, error) {
 
 	bytes := bi.Bytes()
 
-	for len(bytes) > 0 && bytes[0] == 0 {
-		bytes = bytes[1:]
+	leadingZeros := 0
+	for _, char := range input {
+		if char == '0' {
+			leadingZeros++
+		} else {
+			break
+		}
 	}
 
-	return bytes, nil
+	decoded := make([]byte, leadingZeros+len(bytes))
+	copy(decoded[leadingZeros:], bytes)
+
+	return decoded, nil
 }
 
 func DecodeC32Address(address string) (version byte, hash160 [20]byte, err error) {
