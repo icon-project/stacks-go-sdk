@@ -90,26 +90,43 @@ func TestDecodeC32Address(t *testing.T) {
 }
 
 func TestC32CheckEncodeDecode(t *testing.T) {
-	hash160, err := hex.DecodeString("1a2b3c4d5e6f7081920a1b2c3d4e5f60718293a4")
-	if err != nil {
-		t.Fatalf("Failed to decode hash160: %v", err)
+	tests := []struct {
+		name    string
+		hash160 string
+	}{
+		{
+			name:    "Sanity",
+			hash160: "1a2b3c4d5e6f7081920a1b2c3d4e5f60718293a4",
+		},
+		{
+			name:    "With leading zeros",
+			hash160: "00aa83fa8c13e363bcd190e22a8be3344c9fa416",
+		},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hash160, err := hex.DecodeString(tt.hash160)
+			if err != nil {
+				t.Fatalf("Failed to decode hash160: %v", err)
+			}
 
-	address, err := SerializeAddress(stacks.AddressVersionMainnetSingleSig, hash160)
-	if err != nil {
-		t.Fatalf("Failed to serialize address: %v", err)
-	}
+			address, err := SerializeAddress(stacks.AddressVersionMainnetSingleSig, hash160)
+			if err != nil {
+				t.Fatalf("Failed to serialize address: %v", err)
+			}
 
-	version, decodedHash, err := DeserializeAddress(address)
-	if err != nil {
-		t.Fatalf("Failed to deserialize address: %v", err)
-	}
+			version, decodedHash, err := DeserializeAddress(address)
+			if err != nil {
+				t.Fatalf("Failed to deserialize address: %v", err)
+			}
 
-	if version != stacks.AddressVersionMainnetSingleSig {
-		t.Errorf("Expected version %d, got %d", stacks.AddressVersionMainnetSingleSig, version)
-	}
+			if version != stacks.AddressVersionMainnetSingleSig {
+				t.Errorf("Expected version %d, got %d", stacks.AddressVersionMainnetSingleSig, version)
+			}
 
-	if string(decodedHash) != string(hash160) {
-		t.Errorf("Decoded hash160 does not match original")
+			if string(decodedHash) != string(hash160) {
+				t.Errorf("Decoded hash160 does not match original")
+			}
+		})
 	}
 }
